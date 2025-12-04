@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Admin Panel{% endblock %}
+{% block content %}
+<h2>Admin Panel - Register Guest</h2>
+
+{% if message %}
+<p style="color:green">{{ message }}</p>
+{% endif %}
+
+<form method="POST">
+    <label>First Name:</label><br>
+    <input type="text" name="first_name" required><br>
+    <label>Last Name:</label><br>
+    <input type="text" name="last_name" required><br>
+    <label>Passport Number:</label><br>
+    <input type="text" name="passport" required><br>
+    <label>Check-in Date:</label><br>
+    <input type="date" name="check_in" required><br>
+    <label>Check-out Date:</label><br>
+    <input type="date" name="check_out" required><br><br>
+    <button type="submit">Register Guest</button>
+</form>
+
+<hr>
+<h3>All Guests</h3>
+<table border="1">
+<tr>
+<th>Name</th><th>Passport</th><th>Check-in</th><th>Check-out</th>
+</tr>
+{% for g in guests %}
+<tr>
+<td>{{ g.first_name }} {{ g.last_name }}</td>
+<td>{{ g.passport }}</td>
+<td>{{ g.check_in }}</td>
+<td>{{ g.check_out }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<hr>
+<h3>Current Guests</h3>
+<table border="1">
+<tr>
+<th>Name</th><th>Passport</th><th>Check-in</th><th>Check-out</th>
+</tr>
+{% for g in current_guests %}
+<tr>
+<td>{{ g.first_name }} {{ g.last_name }}</td>
+<td>{{ g.passport }}</td>
+<td>{{ g.check_in }}</td>
+<td>{{ g.check_out }}</td>
+</tr>
+{% endfor %}
+</table>
+{% endblock %}
