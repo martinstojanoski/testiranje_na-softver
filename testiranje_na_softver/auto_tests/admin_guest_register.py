@@ -39,7 +39,7 @@ def test_register_and_login():
         # REGISTER
         # ----------------------
         Ime="Martin1"
-        Prezime="Stojanoski"
+        Prezime="Stojanoskii"
         Broj_Pasos="M0123456"
         
         Check_in_raw = "12/12/2025"
