@@ -1,74 +1,81 @@
 import time
+import random
+from datetime import datetime
 from playwright.sync_api import sync_playwright, TimeoutError
 
-from datetime import datetime
 
-def test_register_and_login():
+def generate_guest():
+    first_names = ["Martin", "Ana", "Ivan", "Elena", "Stefan", "Marija"]
+    last_names = ["Stojanoski", "Petrovski", "Ilievski", "Nikolova", "Trajkovski"]
+
+    fname = random.choice(first_names)
+    lname = random.choice(last_names)
+
+    passport = f"M0{random.randint(100000, 999999)}"
+
+    check_in = "2025-12-12"
+    check_out = "2025-12-15"
+
+    return fname, lname, passport, check_in, check_out
+
+
+def test_register_multiple_guests():
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)
         page = browser.new_page()
-        
-        username = f"admin"
-        password = "adminpass"
-
 
         # ----------------------
-        # LOGIN
+        # LOGIN AS ADMIN
         # ----------------------
         page.goto("http://127.0.0.1:5000/login")
-        page.fill("input[name='username']", username)
-        page.fill("input[name='password']", password)
+        page.fill("input[name='username']", "admin")
+        page.fill("input[name='password']", "adminpass")
         page.click("button[type='submit']")
 
-        # Wait for home page with welcome message
         try:
-            page.wait_for_selector(f"text=Welcome, {username}!", timeout=5000)
-            page.screenshot(path="login_ok.png")
+            page.wait_for_selector("text=Welcome, admin!", timeout=5000)
+            print("Admin login OK")
         except TimeoutError:
-            page.screenshot(path="login_fail.png")
-            raise Exception("Login failed or welcome message not found!")
-
-        print(f"Login successful: {username}")
+            page.screenshot(path="admin_login_fail.png")
+            raise Exception("Admin login FAILED!")
 
         page.goto("http://127.0.0.1:5000/admin")
 
         # ----------------------
-        # REGISTER
+        # INSERT MULTIPLE GUESTS
         # ----------------------
-        Ime="Martin1"
-        Prezime="Stojanoskii"
-        Broj_Pasos="M0123456"
-        
-        Check_in_raw = "12/12/2025"
-        Check_in = datetime.strptime(Check_in_raw, "%d/%m/%Y").strftime("%Y-%m-%d")
+        number_of_guests = 5  # колку гости да внесе
 
+        for i in range(number_of_guests):
+            fname, lname, passport, check_in, check_out = generate_guest()
 
-        Check_out_raw = "15/12/2025"
-        Check_out = datetime.strptime(Check_out_raw, "%d/%m/%Y").strftime("%Y-%m-%d")
+            print(f"\n➡ Registering guest {i+1}: {fname} {lname}")
 
-        
+            page.fill("input[name='first_name']", fname)
+            page.fill("input[name='last_name']", lname)
+            page.fill("input[name='passport']", passport)
+            page.fill("input[name='check_in']", check_in)
+            page.fill("input[name='check_out']", check_out)
 
-        page.fill("input[name='first_name']", Ime)
-        page.fill("input[name='last_name']", Prezime)
-        page.fill("input[name='passport']", Broj_Pasos)
-        
-        page.fill("input[name='check_in']", Check_in)
-        page.fill("input[name='check_out']", Check_out)
+            page.click("button[type='submit']")
 
-        page.click("button[type='submit']")
+            # Check success message
+            success_msg = f"Guest {fname} {lname} registered successfully."
 
-        # Wait for redirect to login
-        try:
-            page.wait_for_selector(f"text=Guest {Ime} {Prezime} registered successfully.", timeout=5000)
-        except TimeoutError:
-            page.screenshot(path="register_fail.png")
-            raise Exception("Registration failed or login page not loaded!")
-            
-        print(f"Registration successful: {Ime}")
+            try:
+                page.wait_for_selector(f"text={success_msg}", timeout=5000)
+                print(f"✔ Successfully registered: {fname} {lname}")
+                page.screenshot(path=f"guest_{i+1}_ok.png")
+            except TimeoutError:
+                page.screenshot(path=f"guest_{i+1}_fail.png")
+                raise Exception(f"❌ FAILED registering: {fname} {lname}")
 
-        time.sleep(1)
+            # tiny pause
+            time.sleep(0.5)
 
-        # browser.close()
+        print(f"\n🎉 SUCCESS — {number_of_guests} guests registered!")
+        browser.close()
+
 
 if __name__ == "__main__":
-    test_register_and_login()
+    test_register_multiple_guests()
