@@ -7,11 +7,8 @@ def test_register_and_login():
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)
         page = browser.new_page()
-
-        # ----------------------
-        # REGISTER
-        # ----------------------
-        username = f"admin"  # unique username
+        
+        username = f"admin"
         password = "adminpass"
 
 
