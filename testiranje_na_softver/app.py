@@ -104,6 +104,88 @@ def booking():
     return render_template("booking.html")
     return redirect(url_for("booking"))
 
+
+# contact
+from flask import Flask, render_template, request, flash
+
+# Складирање на контакт пораки
+messages = []
+
+@app.route("/contact", methods=["GET", "POST"])
+def contact():
+    if request.method == "POST":
+        name = request.form["name"].strip()
+        email = request.form["email"].strip()
+        message = request.form["message"].strip()
+
+        # Basic validation
+        if not name or not email or not message:
+            flash("All fields are required!", "error")
+            return render_template("contact.html")
+
+        if "@" not in email:
+            flash("Please enter a valid email address!", "error")
+            return render_template("contact.html")
+
+        # Store message
+        messages.append({
+            "name": name,
+            "email": email,
+            "message": message
+        })
+
+        flash("Your message has been sent successfully!", "success")
+        return render_template("contact.html")
+
+    return render_template("contact.html")
+# contact
+
+
+
+
+#checkin
+from flask import Flask, render_template, request, redirect, session, url_for, flash
+# ... твојот постоечки код ...
+checkins = []  # листа каде ќе ги чуваме check-in записите (опционално)
+@app.route("/checkin", methods=["GET", "POST"])
+def checkin():
+    if request.method == "POST":
+        first_name = request.form["first_name"].strip()
+        last_name = request.form["last_name"].strip()
+        email = request.form["email"].strip()
+        phone = request.form["phone"].strip()
+        checkin_date = request.form["checkin_date"].strip()
+
+        # Едноставна валидација
+        if not first_name.isalpha() or not last_name.isalpha():
+            flash("First name and last name must contain only letters.", "error")
+            return render_template("checkin.html")
+
+        if "@" not in email:
+            flash("Please enter a valid email address.", "error")
+            return render_template("checkin.html")
+
+        if len(phone) < 6:
+            flash("Phone number is too short.", "error")
+            return render_template("checkin.html")
+
+        # Чувај го check-in записот (во меморија за сега)
+        checkins.append({
+            "first_name": first_name,
+            "last_name": last_name,
+            "email": email,
+            "phone": phone,
+            "checkin_date": checkin_date
+        })
+
+        flash(f"Guest {first_name} {last_name} checked in successfully!", "success")
+        return render_template("checkin.html")
+
+    # GET → само ја прикажува формата
+    return render_template("checkin.html")
+#checkin
+
+
 if __name__ == "__main__":
     app.run(debug=True)
 
