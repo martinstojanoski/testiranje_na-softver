@@ -5,6 +5,8 @@ import re
 from database import init_db, get_db_connection
 init_db()
 
+from datetime import datetime
+
 app = Flask(__name__)
 app.secret_key = "your_secret_key_here"
 
@@ -201,6 +203,7 @@ def booking():
 @app.route("/booking-status", methods=["GET", "POST"])
 def booking_status():
     booking = None
+    stay_days = None
 
     if request.method == "POST":
         email = request.form["email"]
@@ -217,7 +220,19 @@ def booking_status():
         if not booking:
             flash("❌ Нема пронајдена регистрација за овој email.", "error")
 
-    return render_template("booking_status.html", booking=booking)
+    # ✅ АКО ИМА BOOKING → ПРЕСМЕТАЈ ДЕНОВИ
+    if booking:
+        checkin = datetime.strptime(booking["checkin_date"], "%Y-%m-%d")
+        checkout = datetime.strptime(booking["checkout_date"], "%Y-%m-%d")
+        stay_days = (checkout - checkin).days
+
+    return render_template(
+        "booking_status.html",
+        booking=booking,
+        stay_days=stay_days
+    )
+
+
 # -------------------
 # BOOKING status
 # -------------------
@@ -273,10 +288,21 @@ def admin_bookings():
         return redirect(url_for("login"))
 
     conn = get_db_connection()
-    bookings = conn.execute(
+    rows = conn.execute(
         "SELECT * FROM bookings ORDER BY created_at DESC"
     ).fetchall()
     conn.close()
+
+    bookings = []
+    for b in rows:
+        checkin = datetime.strptime(b["checkin_date"], "%Y-%m-%d")
+        checkout = datetime.strptime(b["checkout_date"], "%Y-%m-%d")
+        stay_days = (checkout - checkin).days
+
+        bookings.append({
+            **dict(b),
+            "stay_days": stay_days
+        })
 
     return render_template("admin_bookings.html", bookings=bookings)
 #admin/bookings

@@ -143,13 +143,23 @@
     </form>
 
     {% if booking %}
-    <div class="booking-result">
-        <p><span>Име:</span> {{ booking.first_name }} {{ booking.last_name }}</p>
-        <p><span>Check-in:</span> {{ booking.checkin_date }}</p>
-        <p><span>Check-out:</span> {{ booking.checkout_date }}</p>
-        <p class="success-text">✔ Регистрацијата е успешна</p>
-    </div>
+<div class="booking-result">
+    <p><span>Име:</span> {{ booking.first_name }} {{ booking.last_name }}</p>
+    <p><span>Check-in:</span> {{ booking.checkin_date }}</p>
+    <p><span>Check-out:</span> {{ booking.checkout_date }}</p>
+
+    {% if stay_days %}
+    <p><span>Вкупно денови:</span> {{ stay_days }} дена</p>
     {% endif %}
+
+
+
+    <p class="success-text">✔ Регистрацијата е успешна</p>
+</div>
+{% endif %}
+
+
+
 
     <div class="info-note">
         Внесете го email-от што го користевте при резервацијата.
