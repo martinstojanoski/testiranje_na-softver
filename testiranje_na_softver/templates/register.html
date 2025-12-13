@@ -39,12 +39,12 @@
 
     .input-group {
         position: relative;
-        margin-bottom: 22px;
+        margin-bottom: 18px;
     }
 
     .input-group input {
         width: 100%;
-        padding: 12px 40px 12px 15px;
+        padding: 12px 45px 12px 15px;
         border: none;
         border-radius: 10px;
         background-color: #2a2a2a;
@@ -59,7 +59,7 @@
         box-shadow: 0 0 6px #8a2be2;
     }
 
-    /* Icon inside input field */
+    /* Icon inside input */
     .input-group span {
         position: absolute;
         right: 12px;
@@ -67,7 +67,33 @@
         transform: translateY(-50%);
         color: #c3a6ff;
         font-size: 18px;
-        pointer-events: none;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    /* Password strength */
+    .strength-bar {
+        height: 6px;
+        border-radius: 4px;
+        background-color: #333;
+        margin-bottom: 6px;
+        overflow: hidden;
+    }
+
+    .strength-bar div {
+        height: 100%;
+        width: 0%;
+        transition: 0.3s;
+    }
+
+    .weak { background-color: #ff4b4b; }
+    .medium { background-color: #ffb300; }
+    .strong { background-color: #00e676; }
+
+    .strength-text {
+        font-size: 13px;
+        color: #ccc;
+        margin-bottom: 16px;
     }
 
     button {
@@ -106,7 +132,6 @@
         text-decoration: underline;
     }
 
-    /* Error & Success messages */
     .flash-message {
         background-color: #2b1d3b;
         border-left: 4px solid #bb86fc;
@@ -125,10 +150,8 @@
 </style>
 
 <div class="register-container">
-
     <h2>Create Account</h2>
 
-    <!-- Flask flash messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, msg in messages %}
@@ -143,15 +166,22 @@
 
         <label for="username">Username:</label>
         <div class="input-group">
-            <input type="text" id="username" name="username" pattern="[A-Za-z]+" title="Only letters allowed" required>
+            <input type="text" id="username" name="username" pattern="[A-Za-z]+" required>
             <span>👤</span>
         </div>
 
         <label for="password">Password:</label>
         <div class="input-group">
-            <input type="password" id="password" name="password" required>
-            <span>🔒</span>
+            <input type="password" id="password" name="password" required
+                   oninput="checkStrength(this.value)">
+            <span onclick="togglePassword()">👁️</span>
         </div>
+
+        <!-- Strength indicator -->
+        <div class="strength-bar">
+            <div id="strengthBar"></div>
+        </div>
+        <div class="strength-text" id="strengthText">Password strength</div>
 
         <button type="submit">Register</button>
     </form>
@@ -159,6 +189,40 @@
     <div class="login-link">
         Already have an account? <a href="/login">Login</a>
     </div>
-
 </div>
+
+<script>
+    function togglePassword() {
+        const pwd = document.getElementById("password");
+        pwd.type = pwd.type === "password" ? "text" : "password";
+    }
+
+    function checkStrength(password) {
+        const bar = document.getElementById("strengthBar");
+        const text = document.getElementById("strengthText");
+
+        let strength = 0;
+        if (password.length >= 8) strength++;
+        if (/[A-Z]/.test(password)) strength++;
+        if (/[0-9]/.test(password)) strength++;
+        if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+        bar.className = "";
+        bar.style.width = "0%";
+
+        if (strength <= 1) {
+            bar.style.width = "33%";
+            bar.classList.add("weak");
+            text.textContent = "Weak password";
+        } else if (strength <= 3) {
+            bar.style.width = "66%";
+            bar.classList.add("medium");
+            text.textContent = "Medium strength";
+        } else {
+            bar.style.width = "100%";
+            bar.classList.add("strong");
+            text.textContent = "Strong password";
+        }
+    }
+</script>
 {% endblock %}

@@ -14,6 +14,10 @@ app.secret_key = "your_secret_key_here"
 users = {}  # admin + normal users
 guests = []  # list of guest dicts
 
+# -------------------
+# Admin
+# -------------------
+
 # Admin
 admin_user = "admin"
 admin_password = generate_password_hash("adminpass")
@@ -40,6 +44,9 @@ def login():
         return "Invalid credentials!"
     return render_template("login.html")
 
+# -------------------
+# REGISTER
+# -------------------
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
@@ -100,7 +107,9 @@ def logout():
     return redirect(url_for("login"))
 
 
-
+# -------------------
+# CONTACT
+# -------------------
 #contact
 from flask import Flask, render_template, request, flash
 # Складирање на контакт пораки
@@ -133,67 +142,130 @@ def contact():
         return render_template("contact.html")
 
     return render_template("contact.html")
-# ontact
+#contact
 
 from datetime import datetime
 
+# -------------------
+# BOOKING
+# -------------------
 #booking
+from datetime import datetime
+
 @app.route("/booking", methods=["GET", "POST"])
 def booking():
     if request.method == "POST":
-        first_name = request.form["first_name"].strip()
-        last_name = request.form["last_name"].strip()
-        email = request.form["email"].strip()
-        phone = request.form["phone"].strip()
-        checkin_date = request.form["checkin_date"]
-        checkout_date = request.form["checkout_date"]
-
-        if not all([first_name, last_name, email, phone, checkin_date, checkout_date]):
-            flash("All fields are required!", "error")
-            return render_template("booking.html")
-
-        if not first_name.isalpha() or not last_name.isalpha():
-            flash("First and last name must contain only letters.", "error")
-            return render_template("booking.html")
-
-        if "@" not in email:
-            flash("Invalid email address.", "error")
-            return render_template("booking.html")
-
-        if checkout_date <= checkin_date:
-            flash("Check-out must be after check-in.", "error")
-            return render_template("booking.html")
-
+        conn = None
         try:
+            first_name = request.form["first_name"].strip()
+            last_name = request.form["last_name"].strip()
+            email = request.form["email"].strip()
+            phone = request.form["phone"].strip()
+            checkin_date = request.form["checkin_date"]
+            checkout_date = request.form["checkout_date"]
+
+            if not all([first_name, last_name, email, phone, checkin_date, checkout_date]):
+                flash("❌ Сите полиња се задолжителни!", "error")
+                return redirect(url_for("booking"))
+
+            created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
             conn = get_db_connection()
             conn.execute("""
-                INSERT INTO bookings
+                INSERT INTO bookings 
                 (first_name, last_name, email, phone, checkin_date, checkout_date, created_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, (
-                first_name,
-                last_name,
-                email,
-                phone,
-                checkin_date,
-                checkout_date,
-                datetime.now().strftime("%Y-%m-%d %H:%M")
-            ))
+            """, (first_name, last_name, email, phone,
+                  checkin_date, checkout_date, created_at))
             conn.commit()
-            conn.close()
 
-            flash("Guest checked in successfully!", "success")
+            flash("✅ Успешно направивте регистрација за сместување!", "success")
+            return redirect(url_for("booking_status"))
 
         except Exception as e:
-            print("DB ERROR:", e)
-            flash(str(e), "error")
+            print("BOOKING ERROR:", e)
+            flash("❌ Грешка при зачувување во база!", "error")
+            return redirect(url_for("booking"))
 
-        return render_template("booking.html")
+        finally:
+            if conn:
+                conn.close()
 
     return render_template("booking.html")
 #booking
 
 
+# -------------------
+# BOOKING status
+# -------------------
+@app.route("/booking-status", methods=["GET", "POST"])
+def booking_status():
+    booking = None
+
+    if request.method == "POST":
+        email = request.form["email"]
+
+        conn = get_db_connection()
+        booking = conn.execute("""
+            SELECT * FROM bookings
+            WHERE email = ?
+            ORDER BY id DESC
+            LIMIT 1
+        """, (email,)).fetchone()
+        conn.close()
+
+        if not booking:
+            flash("❌ Нема пронајдена регистрација за овој email.", "error")
+
+    return render_template("booking_status.html", booking=booking)
+# -------------------
+# BOOKING status
+# -------------------
+
+
+
+# -------------------
+# BOOKING EDIT
+# -------------------
+#booking_edit
+@app.route("/admin/edit/<int:booking_id>", methods=["GET", "POST"])
+def edit_booking(booking_id):
+    conn = get_db_connection()
+
+    if request.method == "POST":
+        first_name = request.form["first_name"]
+        last_name = request.form["last_name"]
+        email = request.form["email"]
+        phone = request.form["phone"]
+        checkin_date = request.form["checkin_date"]
+        checkout_date = request.form["checkout_date"]
+
+        conn.execute("""
+            UPDATE bookings
+            SET first_name=?, last_name=?, email=?, phone=?,
+                checkin_date=?, checkout_date=?
+            WHERE id=?
+        """, (first_name, last_name, email, phone,
+              checkin_date, checkout_date, booking_id))
+
+        conn.commit()
+        conn.close()
+
+        flash("Booking updated successfully!", "success")
+        return redirect(url_for("admin_bookings"))
+
+    booking = conn.execute(
+        "SELECT * FROM bookings WHERE id=?",
+        (booking_id,)
+    ).fetchone()
+    conn.close()
+
+    return render_template("edit_booking.html", booking=booking)
+#booking_edit
+
+# -------------------
+# ADMIN BOOKINGS
+# -------------------
 #admin/bookings
 @app.route("/admin/bookings")
 def admin_bookings():
@@ -209,6 +281,9 @@ def admin_bookings():
     return render_template("admin_bookings.html", bookings=bookings)
 #admin/bookings
 
+# -------------------
+# DELETE
+# -------------------
 #delete
 @app.route("/admin/bookings/delete/<int:booking_id>", methods=["POST"])
 def delete_booking(booking_id):
@@ -224,6 +299,28 @@ def delete_booking(booking_id):
     return redirect(url_for("admin_bookings"))
 #delete
 
+
+# -------------------
+# IMAGE
+# -------------------
+#images
+@app.route("/images")
+def images():
+    images = [
+        {
+            "url": "/static/images/img1.jpg",
+            "title": "Mountain View",
+            "description": "Nature & Landscape"
+        },
+        {
+            "url": "/static/images/img2.jpg",
+            "title": "City Lights",
+            "description": "Urban Photography"
+        }
+    ]
+    return render_template("images.html", images=images)
+#image
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, use_reloader=False)
 

@@ -8,23 +8,23 @@
 </head>
 <body>
     <header>
-        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="logo">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="HOTEL BUFF" class="logo">
         <nav>
-            <a href="{{ url_for('home') }}">Home</a>
-            {% if 'user' in session %}
+                <a href="{{ url_for('home') }}">Home</a>
+           {% if 'user' in session %}
                 <a href="{{ url_for('booking') }}">Book Now</a>
+                <a href="{{ url_for('booking_status') }}">Booking Staus</a>
+            {% if session['user'] == 'admin' %}
                 <a href="{{ url_for('admin_bookings') }}">Registered</a>
+            {% endif %}
                 <a href="{{ url_for('logout') }}">Logout</a>
             {% else %}
+                <a href="{{ url_for('images') }}">Images</a>
                 <a href="{{ url_for('login') }}">Login</a>
                 <a href="{{ url_for('register') }}">Register</a>
                 <a href="{{ url_for('contact') }}">Contact</a>
-                
-                
-
             {% endif %}
         </nav>
-        
     </header>
 
     <main>

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Edit Booking{% endblock %}
+
+{% block content %}
+<div class="checkin-container">
+    <h2>Edit Booking</h2>
+
+    <form method="POST">
+        <label>First Name</label>
+        <input type="text" name="first_name" value="{{ booking.first_name }}" required>
+
+        <label>Last Name</label>
+        <input type="text" name="last_name" value="{{ booking.last_name }}" required>
+
+        <label>Email</label>
+        <input type="email" name="email" value="{{ booking.email }}" required>
+
+        <label>Phone</label>
+        <input type="text" name="phone" value="{{ booking.phone }}" required>
+
+        <label>Check-in Date</label>
+        <input type="date" name="checkin_date" value="{{ booking.checkin_date }}" required>
+
+        <label>Check-out Date</label>
+        <input type="date" name="checkout_date" value="{{ booking.checkout_date }}" required>
+
+        <button type="submit">Save Changes</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Image Gallery{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background-color: #121212;
+        color: #ffffff;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .gallery-container {
+        max-width: 1200px;
+        margin: 60px auto;
+        padding: 20px;
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 40px;
+        font-size: 32px;
+        letter-spacing: 1px;
+        color: #f5f5f5;
+    }
+
+    .image-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 25px;
+    }
+
+    .image-card {
+        background: #1e1e1e;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+        transition: transform 0.35s ease, box-shadow 0.35s ease;
+        position: relative;
+    }
+
+    .image-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.9);
+    }
+
+    .image-card img {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.4s ease;
+    }
+
+    .image-card:hover img {
+        transform: scale(1.08);
+    }
+
+    .image-info {
+        padding: 16px;
+        text-align: center;
+    }
+
+    .image-info h4 {
+        margin: 0;
+        font-size: 18px;
+        color: #ffffff;
+    }
+
+    .image-info p {
+        margin-top: 6px;
+        font-size: 14px;
+        color: #bdbdbd;
+    }
+
+    /* Overlay */
+    .overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            to top,
+            rgba(0, 0, 0, 0.85),
+            rgba(0, 0, 0, 0.15)
+        );
+        opacity: 0;
+        transition: opacity 0.35s ease;
+    }
+
+    .image-card:hover .overlay {
+        opacity: 1;
+    }
+
+    .overlay span {
+        position: absolute;
+        bottom: 18px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #3f51b5;
+        padding: 8px 18px;
+        border-radius: 20px;
+        font-size: 13px;
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+</style>
+
+<div class="gallery-container">
+    <h2>Image Gallery</h2>
+
+    <div class="image-grid">
+        {% for img in images %}
+        <div class="image-card">
+            <img src="{{ img.url }}" alt="{{ img.title }}">
+            <div class="overlay">
+                <span>View</span>
+            </div>
+            <div class="image-info">
+                <h4>{{ img.title }}</h4>
+                <p>{{ img.description }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
