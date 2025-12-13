@@ -347,6 +347,11 @@ def images():
     return render_template("images.html", images=images)
 #image
 
+flash("Guest deleted successfully!", "success")
+flash("Database error occurred!", "error")
+
+
+
 if __name__ == "__main__":
     app.run(debug=True, use_reloader=False)
 

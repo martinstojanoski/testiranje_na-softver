@@ -11,6 +11,7 @@
     {% endif %}
 {% endwith %}
 
+
 <style>
 .delete-btn {
     background-color: #8b1e1e;
@@ -95,6 +96,34 @@ tbody tr:hover {
     color: #bb86fc;
     text-decoration: none;
 }
+
+
+/* Flash Messages (success / error) */
+.flash {
+    padding: 12px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.flash.error {
+    background-color: #8b1e1e;
+    border-left: 4px solid #ff4d4d;
+    color: #fff;
+}
+
+.flash.success {
+    background-color: #1e5f2b;
+    border-left: 4px solid #4dff8b;
+    color: #d8ffe5;
+}
+
+
+
+
+
+
 </style>
 
 <div class="admin-container">
@@ -110,6 +139,7 @@ tbody tr:hover {
         <th>Phone</th>
         <th>Check-In Date</th>
         <th>Check-Out Date</th>
+        <th>Days</th>
         <th>Created</th>
         <th>Actions</th>
     </tr>
@@ -135,6 +165,13 @@ tbody tr:hover {
                 {{ b.checkout_date }}
             </span>
         </td>
+
+<td>
+    <span class="badge" style="background:#03dac6; color:#000;">
+        {{ b.stay_days }} 
+    </span>
+</td>
+
 
         <td>
             <span class="badge badge-created">
