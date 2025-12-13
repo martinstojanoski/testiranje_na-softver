@@ -9,8 +9,7 @@ def test_login():
         page.fill("input[name='username']", "testuser")
         page.fill("input[name='password']", "testpass")
         page.click("button[type='submit']")
-
-        browser.close()
+        #browser.close()
 
 if __name__ == "__main__":
     test_login()

@@ -10,8 +10,6 @@ def admin_guest_register_invalid():
         
         username = f"admin"
         password = "adminpass"
-
-
         # ----------------------
         # LOGIN
         # ----------------------
@@ -25,7 +23,7 @@ def admin_guest_register_invalid():
             page.wait_for_selector(f"text=Welcome, {username}!", timeout=5000)
             page.screenshot(path="login_ok.png")
         except TimeoutError:
-            page.screenshot(path="login_fail.png")
+            page.screenshot(path="admin_guest_register_invalid.png")
             raise Exception("Login failed or welcome message not found!")
 
         print(f"Login successful: {username}")
@@ -61,12 +59,12 @@ def admin_guest_register_invalid():
         try:
             page.wait_for_selector(f"text=First name and last name must contain only letters", timeout=5000)
         except TimeoutError:
-            page.screenshot(path="register_fail.png")
+            page.screenshot(path="admin_guest_register_invalid_fail.png")
             raise Exception("Registration failed or login page not loaded!")
             
         print(f"Registration successful: {Ime}")
 
-        time.sleep(1)
+        time.sleep(10)
 
         # browser.close()
 

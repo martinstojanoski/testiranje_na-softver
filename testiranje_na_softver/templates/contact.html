@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Guest Check-In{% endblock %}
+{% block title %}Contact Us{% endblock %}
 
 {% block content %}
 <style>
@@ -9,55 +9,57 @@
         font-family: 'Arial', sans-serif;
     }
 
-    .checkin-container {
-        max-width: 500px;
+    .contact-container {
+        max-width: 400px;
         margin: 80px auto;
         background-color: #1e1e1e;
-        padding: 35px;
-        border-radius: 18px;
-        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.6);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+        text-align: center;
     }
 
     h2 {
-        text-align: center;
         margin-bottom: 25px;
         color: #f5f5f5;
     }
 
     label {
         display: block;
-        margin-bottom: 6px;
+        margin-bottom: 5px;
         font-weight: bold;
         color: #e0e0e0;
+        text-align: left;
     }
 
     input[type="text"],
     input[type="email"],
-    input[type="tel"],
-    input[type="date"] {
+    textarea {
         width: 100%;
-        padding: 12px 14px;
-        margin-bottom: 18px;
+        padding: 12px 15px;
+        margin-bottom: 20px;
         border: none;
         border-radius: 8px;
         background-color: #2a2a2a;
-        color: #ffffff;
+        color: #fff;
         transition: 0.3s;
+        resize: none;
     }
 
-    input:focus {
+    input:focus,
+    textarea:focus {
         outline: none;
-        box-shadow: 0 0 6px #6200ea;
+        box-shadow: 0 0 5px #6200ea;
         background-color: #333;
     }
 
     button {
         width: 100%;
-        padding: 14px;
+        padding: 12px;
         border: none;
         border-radius: 8px;
         background-color: #6200ea;
-        color: #ffffff;
+        color: #fff;
         font-size: 16px;
         cursor: pointer;
         transition: 0.3s;
@@ -67,7 +69,7 @@
         background-color: #7c4dff;
     }
 
-    /* Flash Messages */
+    /* Flash Messages (успех / грешка) */
     .flash {
         padding: 12px;
         margin-bottom: 15px;
@@ -85,17 +87,10 @@
         background-color: #1e5f2b;
         border-left: 4px solid #4dff8b;
     }
-
-    .info-note {
-        margin-top: 15px;
-        font-size: 14px;
-        color: #bbbbbb;
-        text-align: center;
-    }
 </style>
 
-<div class="checkin-container">
-    <h2>Guest Check-In</h2>
+<div class="contact-container">
+    <h2>Contact Us</h2>
 
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=True) %}
@@ -107,29 +102,20 @@
     {% endwith %}
 
     <form method="POST">
-        <label>First Name</label>
-        <input type="text" name="first_name" placeholder="Enter first name" required>
+        <label>Your Name</label>
+        <input type="text" name="name" placeholder="Enter your name" required>
 
-        <label>Last Name</label>
-        <input type="text" name="last_name" placeholder="Enter last name" required>
-
-        <label>Email</label>
+        <label>Email Address</label>
         <input type="email" name="email" placeholder="example@mail.com" required>
 
-        <label>Phone Number</label>
-        <input type="tel" name="phone" placeholder="+389..." required>
+        <label>Your Message</label>
+        <textarea name="message" rows="5" placeholder="Write your message..." required></textarea>
 
-        <label>Check-In Date</label>
-        <input type="date" name="checkin_date" required>
-
-        <label>Check-Out Date</label>
-        <input type="date" name="checkout_date" required>
-
-        <button type="submit">Check In</button>
+        <button type="submit">Send Message</button>
     </form>
 
-    <div class="info-note">
-        All fields are required for successful check-in.
+    <div class="register-link" style="margin-top: 15px;">
+        <a href="{{ url_for('home') }}" style="color:#bb86fc; text-decoration:none;">Back to Home</a>
     </div>
 </div>
 

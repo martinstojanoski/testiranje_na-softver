@@ -1,7 +1,9 @@
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session, url_for, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 import re
-from datetime import datetime
+
+from database import init_db, get_db_connection
+init_db()
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key_here"
@@ -98,16 +100,9 @@ def logout():
     return redirect(url_for("login"))
 
 
-@app.route("/booking")
-def booking():
-   
-    return render_template("booking.html")
-    return redirect(url_for("booking"))
 
-
-# contact
+#contact
 from flask import Flask, render_template, request, flash
-
 # Складирање на контакт пораки
 messages = []
 
@@ -138,53 +133,96 @@ def contact():
         return render_template("contact.html")
 
     return render_template("contact.html")
-# contact
+# ontact
 
+from datetime import datetime
 
-
-
-#checkin
-from flask import Flask, render_template, request, redirect, session, url_for, flash
-# ... твојот постоечки код ...
-checkins = []  # листа каде ќе ги чуваме check-in записите (опционално)
-@app.route("/checkin", methods=["GET", "POST"])
-def checkin():
+#booking
+@app.route("/booking", methods=["GET", "POST"])
+def booking():
     if request.method == "POST":
         first_name = request.form["first_name"].strip()
         last_name = request.form["last_name"].strip()
         email = request.form["email"].strip()
         phone = request.form["phone"].strip()
-        checkin_date = request.form["checkin_date"].strip()
+        checkin_date = request.form["checkin_date"]
+        checkout_date = request.form["checkout_date"]
 
-        # Едноставна валидација
+        if not all([first_name, last_name, email, phone, checkin_date, checkout_date]):
+            flash("All fields are required!", "error")
+            return render_template("booking.html")
+
         if not first_name.isalpha() or not last_name.isalpha():
-            flash("First name and last name must contain only letters.", "error")
-            return render_template("checkin.html")
+            flash("First and last name must contain only letters.", "error")
+            return render_template("booking.html")
 
         if "@" not in email:
-            flash("Please enter a valid email address.", "error")
-            return render_template("checkin.html")
+            flash("Invalid email address.", "error")
+            return render_template("booking.html")
 
-        if len(phone) < 6:
-            flash("Phone number is too short.", "error")
-            return render_template("checkin.html")
+        if checkout_date <= checkin_date:
+            flash("Check-out must be after check-in.", "error")
+            return render_template("booking.html")
 
-        # Чувај го check-in записот (во меморија за сега)
-        checkins.append({
-            "first_name": first_name,
-            "last_name": last_name,
-            "email": email,
-            "phone": phone,
-            "checkin_date": checkin_date
-        })
+        try:
+            conn = get_db_connection()
+            conn.execute("""
+                INSERT INTO bookings
+                (first_name, last_name, email, phone, checkin_date, checkout_date, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (
+                first_name,
+                last_name,
+                email,
+                phone,
+                checkin_date,
+                checkout_date,
+                datetime.now().strftime("%Y-%m-%d %H:%M")
+            ))
+            conn.commit()
+            conn.close()
 
-        flash(f"Guest {first_name} {last_name} checked in successfully!", "success")
-        return render_template("checkin.html")
+            flash("Guest checked in successfully!", "success")
 
-    # GET → само ја прикажува формата
-    return render_template("checkin.html")
-#checkin
+        except Exception as e:
+            print("DB ERROR:", e)
+            flash(str(e), "error")
 
+        return render_template("booking.html")
+
+    return render_template("booking.html")
+#booking
+
+
+#admin/bookings
+@app.route("/admin/bookings")
+def admin_bookings():
+    if "user" not in session or session["user"] != admin_user:
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+    bookings = conn.execute(
+        "SELECT * FROM bookings ORDER BY created_at DESC"
+    ).fetchall()
+    conn.close()
+
+    return render_template("admin_bookings.html", bookings=bookings)
+#admin/bookings
+
+#delete
+@app.route("/admin/bookings/delete/<int:booking_id>", methods=["POST"])
+def delete_booking(booking_id):
+    if "user" not in session or session["user"] != admin_user:
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+    conn.execute("DELETE FROM bookings WHERE id = ?", (booking_id,))
+    conn.commit()
+    conn.close()
+
+    flash("Booking deleted successfully.", "success")
+    return redirect(url_for("admin_bookings"))
+#delete
 
 if __name__ == "__main__":
     app.run(debug=True)
