@@ -278,6 +278,7 @@ def edit_booking(booking_id):
     return render_template("edit_booking.html", booking=booking)
 #booking_edit
 
+
 # -------------------
 # ADMIN BOOKINGS
 # -------------------
@@ -307,6 +308,7 @@ def admin_bookings():
     return render_template("admin_bookings.html", bookings=bookings)
 #admin/bookings
 
+
 # -------------------
 # DELETE
 # -------------------
@@ -324,6 +326,7 @@ def delete_booking(booking_id):
     flash("Booking deleted successfully.", "success")
     return redirect(url_for("admin_bookings"))
 #delete
+
 
 
 # -------------------
@@ -347,6 +350,9 @@ def images():
     return render_template("images.html", images=images)
 #image
 
+
+
+
 if __name__ == "__main__":
     app.run(debug=True, use_reloader=False)
-
+    
