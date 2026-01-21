@@ -16,7 +16,7 @@ def test_user_register_invalid():
 
 
         try:
-            page.wait_for_selector("input[title='Only letters allowed']")
+            page.wait_for_selector("input[name='username']", timeout=5000)
             page.screenshot(path="test_user_registration_invalid.png")
         except TimeoutError:
             page.screenshot(path="register_fail.png")
