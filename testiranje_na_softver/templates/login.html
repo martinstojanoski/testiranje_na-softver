@@ -2,6 +2,12 @@
 {% block title %}Login{% endblock %}
 
 {% block content %}
+
+
+
+
+
+
 <style>
     body {
         background-color: #121212;
@@ -29,6 +35,7 @@
         margin-bottom: 5px;
         font-weight: bold;
         color: #e0e0e0;
+        text-align: left;
     }
 
     input[type="text"],
@@ -83,6 +90,16 @@
 
 <div class="login-container">
     <h2>Welcome Back</h2>
+
+    <!-- ✅ Flash messages (for register success, forgot-password success, etc.) -->
+    {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+            {% for category, msg in messages %}
+                <div class="flash {{ category }}">{{ msg }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
     <form method="POST">
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" required placeholder="Enter your username">
@@ -92,6 +109,7 @@
 
         <button type="submit">Login</button>
     </form>
+
     <div class="register-link">
         Don't have an account? <a href="{{ url_for('register') }}">Register</a>
     </div>

@@ -1,8 +1,11 @@
 from flask import Flask, render_template, request, redirect, session, url_for, flash
+
 from werkzeug.security import generate_password_hash, check_password_hash
+
 import re
 
 from database import init_db, get_db_connection
+
 init_db()
 
 from datetime import datetime
@@ -239,7 +242,7 @@ def logout():
 # CONTACT
 # -------------------
 #contact
-from flask import Flask, render_template, request, flash
+    from flask import Flask, render_template, request, flash
 # Складирање на контакт пораки
 messages = []
 
