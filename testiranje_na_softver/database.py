@@ -11,6 +11,9 @@ def get_db_connection():
 def init_db():
     conn = get_db_connection()
 
+    # ----------------------------
+    # BOOKINGS
+    # ----------------------------
     conn.execute("""
         CREATE TABLE IF NOT EXISTS bookings (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,16 +27,33 @@ def init_db():
         )
     """)
 
-    # ✅ NEW: users table
+    # ----------------------------
+    # USERS
+    # ----------------------------
     conn.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL UNIQUE,
             password_hash TEXT NOT NULL,
-            role TEXT NOT NULL DEFAULT 'user',
-            created_at TEXT NOT NULL
+            role TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            password_changed_at TEXT,
+            password_changed_by TEXT
         )
     """)
+
+    # ----------------------------
+    # MIGRATION (ако табелата е стара)
+    # ----------------------------
+    existing_cols = {
+        row["name"] for row in conn.execute("PRAGMA table_info(users)").fetchall()
+    }
+
+    if "password_changed_at" not in existing_cols:
+        conn.execute("ALTER TABLE users ADD COLUMN password_changed_at TEXT")
+
+    if "password_changed_by" not in existing_cols:
+        conn.execute("ALTER TABLE users ADD COLUMN password_changed_by TEXT")
 
     conn.commit()
     conn.close()

@@ -9,7 +9,7 @@
     }
 
     .register-container {
-        max-width: 420px;
+        max-width: 440px;
         margin: 70px auto;
         background-color: #1e1e1e;
         padding: 35px;
@@ -25,7 +25,7 @@
 
     h2 {
         text-align: center;
-        margin-bottom: 30px;
+        margin-bottom: 25px;
         color: #f5f5f5;
         font-size: 28px;
     }
@@ -39,7 +39,7 @@
 
     .input-group {
         position: relative;
-        margin-bottom: 18px;
+        margin-bottom: 16px;
     }
 
     .input-group input {
@@ -59,7 +59,6 @@
         box-shadow: 0 0 6px #8a2be2;
     }
 
-    /* Icon inside input */
     .input-group span {
         position: absolute;
         right: 12px;
@@ -67,7 +66,6 @@
         transform: translateY(-50%);
         color: #c3a6ff;
         font-size: 18px;
-        cursor: pointer;
         user-select: none;
     }
 
@@ -108,6 +106,7 @@
         transition: 0.25s ease;
         font-weight: bold;
         letter-spacing: 0.5px;
+        margin-top: 10px;
     }
 
     button:hover {
@@ -164,17 +163,47 @@
 
     <form method="POST">
 
-        <label for="username">Username:</label>
+        <!-- First Name -->
+        <label>First Name</label>
         <div class="input-group">
-            <input type="text" id="username" name="username" pattern="[A-Za-z]+" required>
+            <input type="text" name="first_name" placeholder="Enter first name" required>
+            <span>🧑</span>
+        </div>
+
+        <!-- Last Name -->
+        <label>Last Name</label>
+        <div class="input-group">
+            <input type="text" name="last_name" placeholder="Enter last name" required>
+            <span>🧑</span>
+        </div>
+
+        <!-- Username -->
+        <label>Username</label>
+        <div class="input-group">
+            <input type="text" name="username" pattern="[A-Za-z]+" placeholder="Enter username" required>
             <span>👤</span>
         </div>
 
-        <label for="password">Password:</label>
+        <!-- Email -->
+        <label>Email</label>
+        <div class="input-group">
+            <input type="email" name="email" placeholder="example@mail.com" required>
+            <span>📧</span>
+        </div>
+
+        <!-- Phone -->
+        <label>Phone Number</label>
+        <div class="input-group">
+            <input type="tel" name="phone" placeholder="+389..." required>
+            <span>📞</span>
+        </div>
+
+        <!-- Password -->
+        <label>Password</label>
         <div class="input-group">
             <input type="password" id="password" name="password" required
                    oninput="checkStrength(this.value)">
-            <span onclick="togglePassword()">👁️</span>
+            <span onclick="togglePassword()" style="cursor:pointer;">👁️</span>
         </div>
 
         <!-- Strength indicator -->

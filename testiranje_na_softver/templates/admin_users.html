@@ -3,203 +3,97 @@
 
 {% block content %}
 <style>
-    body {
-        background-color: #121212;
-        color: #ffffff;
-        font-family: 'Arial', sans-serif;
-    }
+    body { background-color:#121212; color:#fff; font-family:Arial,sans-serif; }
 
-    .users-container {
-        max-width: 950px;
+    .users-container{
+        max-width: 1050px;
         margin: 80px auto;
-        background-color: #1e1e1e;
+        background:#1e1e1e;
         padding: 32px;
         border-radius: 18px;
-        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.6);
-        animation: fadeIn 0.4s ease-in-out;
+        box-shadow: 0 8px 22px rgba(0,0,0,0.6);
+        animation: fadeIn .35s ease-in-out;
+    }
+    @keyframes fadeIn { from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);} }
+
+    .users-header{ display:flex; justify-content:space-between; gap:14px; align-items:flex-start; margin-bottom:14px; }
+    h2{ margin:0; color:#f5f5f5; }
+    .subtitle{ margin:6px 0 0 0; color:#bbb; font-size:14px; }
+
+    .pill{
+        display:inline-flex; align-items:center; gap:8px;
+        padding:8px 12px; border-radius:999px;
+        background:#121212; border:1px solid #2f2f2f;
+        color:#d9d9d9; font-size:13px; white-space:nowrap;
+    }
+    .pill strong{ color:#fff; }
+
+    .stats-row{
+        display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;
     }
 
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(18px); }
-        to   { opacity: 1; transform: translateY(0); }
+    /* Controls */
+    .controls{
+        margin-top: 16px;
+        display:flex; gap:10px; flex-wrap:wrap;
+        background:#121212; border:1px solid #2a2a2a;
+        padding:12px; border-radius:14px;
     }
-
-    .users-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 16px;
+    .controls input, .controls select{
+        background:#1e1e1e; border:1px solid #333;
+        color:#fff; padding:10px 12px; border-radius:10px;
+        outline:none;
     }
+    .controls input:focus, .controls select:focus{ box-shadow:0 0 6px #6200ea; border-color:#4a2a9e; }
 
-    h2 {
-        margin: 0;
-        color: #f5f5f5;
+    .btn{
+        padding:10px 14px; border-radius:10px; border:none;
+        cursor:pointer; background:#6200ea; color:#fff; font-size:14px;
+        transition:.25s; text-decoration:none; display:inline-flex; align-items:center; gap:8px;
     }
+    .btn:hover{ background:#7c4dff; transform:translateY(-1px); }
+    .btn.secondary{ background:#2a2a2a; border:1px solid #3a3a3a; color:#eaeaea; }
+    .btn.secondary:hover{ background:#333; }
+    .btn.danger{ background:#8b1e1e; }
+    .btn.danger:hover{ background:#ff4d4d; }
 
-    .subtitle {
-        margin: 6px 0 0 0;
-        color: #bbbbbb;
-        font-size: 14px;
-    }
-
-    .pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 12px;
-        border-radius: 999px;
-        background: #121212;
-        border: 1px solid #2f2f2f;
-        color: #d9d9d9;
-        font-size: 13px;
-        white-space: nowrap;
-    }
-
-    .pill strong { color: #ffffff; }
-
-    /* Flash Messages (optional if you use flash here) */
-    .flash {
-        padding: 12px;
-        margin-bottom: 14px;
-        border-radius: 8px;
-        font-size: 14px;
-        text-align: center;
-    }
-
-    .flash.error {
-        background-color: #8b1e1e;
-        border-left: 4px solid #ff4d4d;
-    }
-
-    .flash.success {
-        background-color: #1e5f2b;
-        border-left: 4px solid #4dff8b;
-    }
+    /* Flash */
+    .flash{ padding:12px; margin:14px 0; border-radius:8px; font-size:14px; text-align:center; }
+    .flash.error{ background:#8b1e1e; border-left:4px solid #ff4d4d; }
+    .flash.success{ background:#1e5f2b; border-left:4px solid #4dff8b; }
 
     /* Table */
-    .table-wrap {
-        margin-top: 18px;
-        background: #121212;
-        border: 1px solid #2a2a2a;
-        border-radius: 14px;
-        overflow: hidden;
+    .table-wrap{ margin-top:18px; background:#121212; border:1px solid #2a2a2a; border-radius:14px; overflow:hidden; }
+    table{ width:100%; border-collapse:collapse; }
+    thead th{
+        text-align:left; padding:14px;
+        font-size:13px; letter-spacing:.3px;
+        color:#cfcfcf; background:#151515;
+        border-bottom:1px solid #2a2a2a;
     }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
+    tbody td{
+        padding:13px 14px; border-bottom:1px solid #222; color:#e6e6e6; font-size:14px;
     }
+    tbody tr:nth-child(even){ background:rgba(255,255,255,0.02); }
+    tbody tr:hover{ background:rgba(98,0,234,0.10); }
 
-    thead th {
-        text-align: left;
-        padding: 14px 14px;
-        font-size: 13px;
-        letter-spacing: 0.3px;
-        color: #cfcfcf;
-        background: #151515;
-        border-bottom: 1px solid #2a2a2a;
+    .role-badge{
+        display:inline-block; padding:6px 10px; border-radius:999px; font-size:12px; font-weight:bold;
+        border:1px solid #2a2a2a; background:#1a1a1a; color:#fff;
     }
+    .role-admin{ border-color:rgba(77,255,139,.35); background:rgba(30,95,43,.35); color:#b7ffd0; }
+    .role-user{ border-color:rgba(124,77,255,.35); background:rgba(98,0,234,.20); color:#d7c9ff; }
 
-    tbody td {
-        padding: 13px 14px;
-        border-bottom: 1px solid #222;
-        color: #e6e6e6;
-        font-size: 14px;
-    }
+    .empty-state{ padding:22px; text-align:center; color:#bbb; }
 
-    tbody tr:nth-child(even) {
-        background: rgba(255,255,255,0.02);
-    }
-
-    tbody tr:hover {
-        background: rgba(98, 0, 234, 0.10);
-    }
-
-    /* Role badge */
-    .role-badge {
-        display: inline-block;
-        padding: 6px 10px;
-        border-radius: 999px;
-        font-size: 12px;
-        font-weight: bold;
-        border: 1px solid #2a2a2a;
-        background: #1a1a1a;
-        color: #ffffff;
-    }
-
-    .role-admin {
-        border-color: rgba(77, 255, 139, 0.35);
-        background: rgba(30, 95, 43, 0.35);
-        color: #b7ffd0;
-    }
-
-    .role-user {
-        border-color: rgba(124, 77, 255, 0.35);
-        background: rgba(98, 0, 234, 0.20);
-        color: #d7c9ff;
-    }
-
-    .empty-state {
-        padding: 22px;
-        text-align: center;
-        color: #bbbbbb;
-    }
-
-    .actions {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-    }
-
-    .btn {
-        padding: 10px 14px;
-        border-radius: 10px;
-        border: none;
-        cursor: pointer;
-        background-color: #6200ea;
-        color: #fff;
-        font-size: 14px;
-        transition: 0.25s;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .btn:hover {
-        background-color: #7c4dff;
-        transform: translateY(-1px);
-    }
-
-    .btn.secondary {
-        background: #2a2a2a;
-        border: 1px solid #3a3a3a;
-        color: #eaeaea;
-    }
-
-    .btn.secondary:hover {
-        background: #333;
-        transform: translateY(-1px);
-    }
-
-    /* Responsive */
-    @media (max-width: 720px) {
-        .users-container { margin: 40px 12px; padding: 22px; }
-        .users-header { flex-direction: column; align-items: flex-start; }
-        .actions { width: 100%; flex-wrap: wrap; }
-        thead { display: none; }
-        table, tbody, tr, td { display: block; width: 100%; }
-        tbody tr { border-bottom: 1px solid #2a2a2a; }
-        tbody td {
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-        }
-        tbody td::before {
-            content: attr(data-label);
-            color: #bbbbbb;
-        }
+    @media(max-width: 820px){
+        .users-container{ margin:40px 12px; padding:22px; }
+        .users-header{ flex-direction:column; }
+        thead{ display:none; }
+        table, tbody, tr, td{ display:block; width:100%; }
+        tbody tr{ border-bottom:1px solid #2a2a2a; }
+        tbody td{ display:flex; justify-content:space-between; gap:12px; }
+        tbody td::before{ content:attr(data-label); color:#bbb; }
     }
 </style>
 
@@ -207,18 +101,32 @@
     <div class="users-header">
         <div>
             <h2>Registered Users</h2>
-            <p class="subtitle">
-                Оваа листа ги прикажува корисниците зачувани во SQLite табелата <b>users</b>.
-            </p>
+            <p class="subtitle">Преглед на корисници во SQLite табелата <b>users</b>.</p>
+
+            <div class="stats-row">
+                <span class="pill">Total: <strong>{{ total }}</strong></span>
+                <span class="pill">Admins: <strong>{{ admins }}</strong></span>
+                <span class="pill">Users: <strong>{{ normal_users }}</strong></span>
+            </div>
         </div>
 
         <div class="actions">
-            <span class="pill">Total: <strong>{{ users|length }}</strong></span>
-            <a class="btn secondary" href="{{ url_for('register') }}">← Back to Register users</a>
+            <a class="btn secondary" href="{{ url_for('register') }}">← Back to Register</a>
         </div>
     </div>
 
-    <!-- Flash Messages (optional) -->
+    <form class="controls" method="GET" action="{{ url_for('admin_users') }}">
+        <input type="text" name="q" placeholder="Search username..." value="{{ q|default('') }}">
+        <select name="role">
+            <option value="" {% if not role_filter %}selected{% endif %}>All roles</option>
+            <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>Admin</option>
+            <option value="user" {% if role_filter == 'user' %}selected{% endif %}>User</option>
+        </select>
+
+        <button class="btn" type="submit">Search</button>
+        <a class="btn secondary" href="{{ url_for('admin_users') }}">Reset</a>
+    </form>
+
     {% with messages = get_flashed_messages(with_categories=True) %}
         {% if messages %}
             {% for category, msg in messages %}
@@ -232,10 +140,13 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 70px;">ID</th>
+                    <th style="width:70px;">ID</th>
                     <th>Username</th>
-                    <th style="width: 140px;">Role</th>
-                    <th style="width: 220px;">Created at</th>
+                    <th style="width:140px;">Role</th>
+                    <th style="width:220px;">Created at</th>
+                    <th style="width:320px;">Actions</th>
+                    <th style="width:220px;">Pwd changed at</th>
+                    <th style="width:220px;">Pwd changed by</th>
                 </tr>
             </thead>
             <tbody>
@@ -251,14 +162,36 @@
                         {% endif %}
                     </td>
                     <td data-label="Created at">{{ u.created_at }}</td>
+
+                    <td data-label="Pwd changed at">
+                    {{ u.password_changed_at if u.password_changed_at else '-' }}
+                    </td>
+
+                    <td data-label="Pwd changed by">
+                    {{ u.password_changed_by if u.password_changed_by else '-' }}
+                    </td>
+
+
+                    <td data-label="Actions">
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <a class="btn secondary" href="{{ url_for('edit_user', user_id=u.id) }}">Edit</a>
+                            <a class="btn secondary" href="{{ url_for('admin_change_user_password', user_id=u.id) }}">Change Password</a>
+
+                            {% if u.username != 'admin' %}
+                            <form method="POST"
+                                  action="{{ url_for('delete_user', user_id=u.id) }}"
+                                  onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                <button class="btn danger" type="submit">Delete</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
         {% else %}
-            <div class="empty-state">
-                Нема пронајдено корисници во табелата <b>users</b>.
-            </div>
+            <div class="empty-state">Нема пронајдени корисници за ова пребарување.</div>
         {% endif %}
     </div>
 </div>
