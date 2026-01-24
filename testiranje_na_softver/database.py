@@ -10,6 +10,7 @@ def get_db_connection():
 
 def init_db():
     conn = get_db_connection()
+
     conn.execute("""
         CREATE TABLE IF NOT EXISTS bookings (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -22,5 +23,17 @@ def init_db():
             created_at TEXT NOT NULL
         )
     """)
+
+    # ✅ NEW: users table
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL UNIQUE,
+            password_hash TEXT NOT NULL,
+            role TEXT NOT NULL DEFAULT 'user',
+            created_at TEXT NOT NULL
+        )
+    """)
+
     conn.commit()
     conn.close()

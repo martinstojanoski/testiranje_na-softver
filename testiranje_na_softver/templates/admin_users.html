@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+{% block title %}Admin Users{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background-color: #121212;
+        color: #ffffff;
+        font-family: 'Arial', sans-serif;
+    }
+
+    .users-container {
+        max-width: 950px;
+        margin: 80px auto;
+        background-color: #1e1e1e;
+        padding: 32px;
+        border-radius: 18px;
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.6);
+        animation: fadeIn 0.4s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(18px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .users-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    h2 {
+        margin: 0;
+        color: #f5f5f5;
+    }
+
+    .subtitle {
+        margin: 6px 0 0 0;
+        color: #bbbbbb;
+        font-size: 14px;
+    }
+
+    .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: #121212;
+        border: 1px solid #2f2f2f;
+        color: #d9d9d9;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .pill strong { color: #ffffff; }
+
+    /* Flash Messages (optional if you use flash here) */
+    .flash {
+        padding: 12px;
+        margin-bottom: 14px;
+        border-radius: 8px;
+        font-size: 14px;
+        text-align: center;
+    }
+
+    .flash.error {
+        background-color: #8b1e1e;
+        border-left: 4px solid #ff4d4d;
+    }
+
+    .flash.success {
+        background-color: #1e5f2b;
+        border-left: 4px solid #4dff8b;
+    }
+
+    /* Table */
+    .table-wrap {
+        margin-top: 18px;
+        background: #121212;
+        border: 1px solid #2a2a2a;
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    thead th {
+        text-align: left;
+        padding: 14px 14px;
+        font-size: 13px;
+        letter-spacing: 0.3px;
+        color: #cfcfcf;
+        background: #151515;
+        border-bottom: 1px solid #2a2a2a;
+    }
+
+    tbody td {
+        padding: 13px 14px;
+        border-bottom: 1px solid #222;
+        color: #e6e6e6;
+        font-size: 14px;
+    }
+
+    tbody tr:nth-child(even) {
+        background: rgba(255,255,255,0.02);
+    }
+
+    tbody tr:hover {
+        background: rgba(98, 0, 234, 0.10);
+    }
+
+    /* Role badge */
+    .role-badge {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: bold;
+        border: 1px solid #2a2a2a;
+        background: #1a1a1a;
+        color: #ffffff;
+    }
+
+    .role-admin {
+        border-color: rgba(77, 255, 139, 0.35);
+        background: rgba(30, 95, 43, 0.35);
+        color: #b7ffd0;
+    }
+
+    .role-user {
+        border-color: rgba(124, 77, 255, 0.35);
+        background: rgba(98, 0, 234, 0.20);
+        color: #d7c9ff;
+    }
+
+    .empty-state {
+        padding: 22px;
+        text-align: center;
+        color: #bbbbbb;
+    }
+
+    .actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .btn {
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        background-color: #6200ea;
+        color: #fff;
+        font-size: 14px;
+        transition: 0.25s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn:hover {
+        background-color: #7c4dff;
+        transform: translateY(-1px);
+    }
+
+    .btn.secondary {
+        background: #2a2a2a;
+        border: 1px solid #3a3a3a;
+        color: #eaeaea;
+    }
+
+    .btn.secondary:hover {
+        background: #333;
+        transform: translateY(-1px);
+    }
+
+    /* Responsive */
+    @media (max-width: 720px) {
+        .users-container { margin: 40px 12px; padding: 22px; }
+        .users-header { flex-direction: column; align-items: flex-start; }
+        .actions { width: 100%; flex-wrap: wrap; }
+        thead { display: none; }
+        table, tbody, tr, td { display: block; width: 100%; }
+        tbody tr { border-bottom: 1px solid #2a2a2a; }
+        tbody td {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        tbody td::before {
+            content: attr(data-label);
+            color: #bbbbbb;
+        }
+    }
+</style>
+
+<div class="users-container">
+    <div class="users-header">
+        <div>
+            <h2>Registered Users</h2>
+            <p class="subtitle">
+                Оваа листа ги прикажува корисниците зачувани во SQLite табелата <b>users</b>.
+            </p>
+        </div>
+
+        <div class="actions">
+            <span class="pill">Total: <strong>{{ users|length }}</strong></span>
+            <a class="btn secondary" href="{{ url_for('register') }}">← Back to Register users</a>
+        </div>
+    </div>
+
+    <!-- Flash Messages (optional) -->
+    {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+            {% for category, msg in messages %}
+                <div class="flash {{ category }}">{{ msg }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="table-wrap">
+        {% if users and users|length > 0 %}
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 70px;">ID</th>
+                    <th>Username</th>
+                    <th style="width: 140px;">Role</th>
+                    <th style="width: 220px;">Created at</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td data-label="ID">{{ u.id }}</td>
+                    <td data-label="Username">{{ u.username }}</td>
+                    <td data-label="Role">
+                        {% if u.role == 'admin' %}
+                            <span class="role-badge role-admin">ADMIN</span>
+                        {% else %}
+                            <span class="role-badge role-user">USER</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="Created at">{{ u.created_at }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <div class="empty-state">
+                Нема пронајдено корисници во табелата <b>users</b>.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

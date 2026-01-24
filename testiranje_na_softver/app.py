@@ -10,20 +10,42 @@ from datetime import datetime
 app = Flask(__name__)
 app.secret_key = "your_secret_key_here"
 
+def ensure_admin():
+    conn = get_db_connection()
+
+    admin = conn.execute(
+        "SELECT * FROM users WHERE username = ?",
+        ("admin",)
+    ).fetchone()
+
+    if not admin:
+        conn.execute("""
+            INSERT INTO users (username, password_hash, role, created_at)
+            VALUES (?, ?, ?, ?)
+        """, (
+            "admin",
+            generate_password_hash("adminpass"),
+            "admin",
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        ))
+        conn.commit()
+
+    conn.close()
+ensure_admin()
+
+
+
 # -------------------
 # Storage
 # -------------------
-users = {}  # admin + normal users
+
 guests = []  # list of guest dicts
 
 # -------------------
 # Admin
 # -------------------
 
-# Admin
-admin_user = "admin"
-admin_password = generate_password_hash("adminpass")
-users[admin_user] = admin_password
+
 
 # -------------------
 # ROUTES
@@ -38,12 +60,23 @@ def home():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        username = request.form["username"]
+        username = request.form["username"].strip()
         password = request.form["password"]
-        if username in users and check_password_hash(users[username], password):
-            session["user"] = username
+
+        conn = get_db_connection()
+        user = conn.execute(
+            "SELECT * FROM users WHERE username = ?",
+            (username,)
+        ).fetchone()
+        conn.close()
+
+        if user and check_password_hash(user["password_hash"], password):
+            session["user"] = user["username"]
+            session["role"] = user["role"]  # ✅ store role
             return redirect(url_for("home"))
+
         return "Invalid credentials!"
+    
     return render_template("login.html")
 
 # -------------------
@@ -52,16 +85,36 @@ def login():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        username = request.form["username"]
+        username = request.form["username"].strip()
         password = request.form["password"]
 
         # Username validation
         if not re.fullmatch(r"[A-Za-z]+", username):
             return "Invalid username! Only letters allowed."
-        if username in users:
-            return "User already exists!"
 
-        users[username] = generate_password_hash(password)
+        conn = get_db_connection()
+
+        existing = conn.execute(
+            "SELECT * FROM users WHERE username = ?",
+            (username,)
+        ).fetchone()
+
+        if existing:
+            conn.close()
+            return "User already exists!"
+        conn.execute("""
+            INSERT INTO users (username, password_hash, role, created_at)
+            VALUES (?, ?, ?, ?)
+        """, (
+            username,
+            generate_password_hash(password),
+            "user",
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        ))
+
+        conn.commit()
+        conn.close()
+
         return redirect(url_for("login"))
 
     return render_template("register.html")
@@ -71,23 +124,19 @@ def register():
 # -------------------
 @app.route("/admin", methods=["GET", "POST"])
 def admin_panel():
-    if "user" not in session or session["user"] != admin_user:
+    if "user" not in session or session.get("role") != "admin":
         return redirect(url_for("login"))
-
     message = ""
     if request.method == "POST":
-        # Gather guest info
         first_name = request.form["first_name"]
         last_name = request.form["last_name"]
         passport = request.form["passport"]
         check_in = request.form["check_in"]
         check_out = request.form["check_out"]
 
-        # Simple validation
         if not first_name.isalpha() or not last_name.isalpha():
             message = "First name and last name must contain only letters."
         else:
-            # Store guest
             guests.append({
                 "first_name": first_name,
                 "last_name": last_name,
@@ -97,7 +146,6 @@ def admin_panel():
             })
             message = f"Guest {first_name} {last_name} registered successfully."
 
-    # Filter current guests (check-in <= today <= check-out)
     today_str = datetime.now().strftime("%Y-%m-%d")
     current_guests = [g for g in guests if g["check_in"] <= today_str <= g["check_out"]]
 
@@ -106,8 +154,8 @@ def admin_panel():
 @app.route("/logout")
 def logout():
     session.pop("user", None)
+    session.pop("role", None)
     return redirect(url_for("login"))
-
 
 # -------------------
 # CONTACT
@@ -285,13 +333,11 @@ def edit_booking(booking_id):
 #admin/bookings
 @app.route("/admin/bookings")
 def admin_bookings():
-    if "user" not in session or session["user"] != admin_user:
+    if "user" not in session or session.get("role") != "admin":
         return redirect(url_for("login"))
 
     conn = get_db_connection()
-    rows = conn.execute(
-        "SELECT * FROM bookings ORDER BY created_at DESC"
-    ).fetchall()
+    rows = conn.execute("SELECT * FROM bookings ORDER BY created_at DESC").fetchall()
     conn.close()
 
     bookings = []
@@ -300,10 +346,7 @@ def admin_bookings():
         checkout = datetime.strptime(b["checkout_date"], "%Y-%m-%d")
         stay_days = (checkout - checkin).days
 
-        bookings.append({
-            **dict(b),
-            "stay_days": stay_days
-        })
+        bookings.append({**dict(b), "stay_days": stay_days})
 
     return render_template("admin_bookings.html", bookings=bookings)
 #admin/bookings
@@ -315,7 +358,7 @@ def admin_bookings():
 #delete
 @app.route("/admin/bookings/delete/<int:booking_id>", methods=["POST"])
 def delete_booking(booking_id):
-    if "user" not in session or session["user"] != admin_user:
+    if "user" not in session or session.get("role") != "admin":
         return redirect(url_for("login"))
 
     conn = get_db_connection()
@@ -350,6 +393,24 @@ def images():
     return render_template("images.html", images=images)
 #image
 
+
+# -------------------
+# admin/users
+# -------------------
+#admin/users
+@app.route("/admin/users")
+def admin_users():
+    if "user" not in session or session.get("role") != "admin":
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+    users = conn.execute(
+        "SELECT id, username, role, created_at FROM users ORDER BY id DESC"
+    ).fetchall()
+    conn.close()
+
+    return render_template("admin_users.html", users=users)
+#admin/users
 
 
 

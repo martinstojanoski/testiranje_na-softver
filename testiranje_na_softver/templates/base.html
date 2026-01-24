@@ -23,6 +23,7 @@
         {# 👑 Admin опции #}
         {% if session['user'] == 'admin' %}
             <a href="{{ url_for('admin_bookings') }}">Registered</a>
+             <a href="{{ url_for('admin_users') }}">Registered Users</a>
         {% endif %}
 
         <a href="{{ url_for('logout') }}">Logout</a>
