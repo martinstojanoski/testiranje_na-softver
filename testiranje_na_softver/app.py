@@ -88,12 +88,12 @@ def login():
 @app.route("/forgot-password", methods=["GET", "POST"])
 def forgot_password():
     if request.method == "POST":
-        username = request.form["username"].strip()
-        new_password = request.form["new_password"]
-        confirm_password = request.form["confirm_password"]
+        username = request.form.get("username", "").strip()
+        new_password = request.form.get("new_password", "").strip()
+        confirm_password = request.form.get("confirm_password", "").strip()
 
-        if len(new_password) < 6:
-            flash("❌ Password must be at least 6 characters.", "error")
+        if not username or not new_password or not confirm_password:
+            flash("❌ Please fill all fields.", "error")
             return render_template("forgot_password.html")
 
         if new_password != confirm_password:
@@ -102,35 +102,26 @@ def forgot_password():
 
         conn = get_db_connection()
         user = conn.execute(
-            "SELECT id FROM users WHERE username = ?",
+            "SELECT id, username FROM users WHERE username = ?",
             (username,)
         ).fetchone()
 
         if not user:
             conn.close()
-            flash("❌ Username not found.", "error")
+            flash("❌ User not found.", "error")
             return render_template("forgot_password.html")
 
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        changed_by = f"admin:{session.get('user')}"
-
         conn.execute("""
-    UPDATE users
-    SET password_hash = ?,
-        password_changed_at = ?,
-        password_changed_by = ?
-    WHERE id = ?
-""", (
-    generate_password_hash(new_password),
-    now,
-    changed_by,
-    user_id
-))
-        
+            UPDATE users
+            SET password_hash = ?, password_changed_at = ?, password_changed_by = ?
+            WHERE id = ?
+        """, (generate_password_hash(new_password), now, "user", user["id"]))
+
         conn.commit()
         conn.close()
 
-        flash("✅ Password updated. You can now login.", "success")
+        flash("✅ Password updated. You can login now.", "success")
         return redirect(url_for("login"))
 
     return render_template("forgot_password.html")
@@ -155,38 +146,53 @@ def forgot_password():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        username = request.form["username"].strip()
-        password = request.form["password"]
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+        confirm_password = request.form.get("confirm_password", "")
 
-        # Username validation
+        # ✅ validations
+        if not username or not password or not confirm_password:
+            flash("❌ Сите полиња се задолжителни.", "error")
+            return redirect(url_for("register"))
+
+        if password != confirm_password:
+            flash("❌ Лозинките не се совпаѓаат.", "error")
+            return redirect(url_for("register"))
+
         if not re.fullmatch(r"[A-Za-z]+", username):
-            return "Invalid username! Only letters allowed."
+            flash("❌ Invalid username! Only letters allowed.", "error")
+            return redirect(url_for("register"))
 
         conn = get_db_connection()
-
         existing = conn.execute(
-            "SELECT * FROM users WHERE username = ?",
+            "SELECT id FROM users WHERE username = ?",
             (username,)
         ).fetchone()
 
         if existing:
             conn.close()
-            return "User already exists!"
+            flash("❌ User already exists!", "error")
+            return redirect(url_for("register"))
+
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
         conn.execute("""
-           INSERT INTO users (username, password_hash, role, created_at, password_changed_at, password_changed_by)
-    VALUES (?, ?, ?, ?, ?, ?)
-""", (
-    username,
-    generate_password_hash(password),
-    "user",
-    datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-    datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-    "self (registration)"
+            INSERT INTO users (username, password_hash, role, created_at, password_changed_at, password_changed_by)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (
+            username,
+            generate_password_hash(password),
+            "user",
+            now,
+            now,
+            "self (registration)"
         ))
 
         conn.commit()
         conn.close()
 
+        # ✅ SUCCESS flash + redirect to login
+        flash(f"✅ Корисникот '{username}' е успешно регистриран. Најави се.", "success")
         return redirect(url_for("login"))
 
     return render_template("register.html")

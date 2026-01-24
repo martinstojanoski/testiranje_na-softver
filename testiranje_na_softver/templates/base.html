@@ -5,43 +5,74 @@
     <title>{% block title %}My Flask App{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+<style>
+  .flash{
+      padding: 12px;
+      margin: 12px auto 16px auto;
+      border-radius: 10px;
+      font-size: 14px;
+      text-align: center;
+      border-left: 4px solid transparent;
+      max-width: 1100px;
+      width: calc(100% - 24px);
+  }
+
+  .flash.success{
+      background-color: #1e5f2b;
+      border-left-color: #4dff8b;
+      color: #d8ffe5;
+  }
+
+  .flash.error{
+      background-color: #3b1d1d;
+      border-left-color: #ff4d4d;
+      color: #ffd0d0;
+  }
+
+  .flash.info{
+      background-color: #2b1d3b;
+      border-left-color: #bb86fc;
+      color: #e5d4ff;
+  }
+</style>
 </head>
+
 <body>
     <header>
         <img src="{{ url_for('static', filename='images/logo.png') }}" alt="HOTEL BUFF" class="logo">
-       <nav>
-    <a href="{{ url_for('home') }}">Home</a>
+        <nav>
+            <a href="{{ url_for('home') }}">Home</a>
 
-    {% if 'user' in session %}
-        <a href="{{ url_for('booking') }}">Book Now</a>
+            {% if 'user' in session %}
+                <a href="{{ url_for('booking') }}">Book Now</a>
 
-        {# 👤 Booking Status само за user (не за admin) #}
-        {% if session['user'] != 'admin' %}
-            <a href="{{ url_for('booking_status') }}">Booking Status</a>
-        {% endif %}
+                {% if session['user'] != 'admin' %}
+                    <a href="{{ url_for('booking_status') }}">Booking Status</a>
+                {% endif %}
 
-        {# 👑 Admin опции #}
-        {% if session['user'] == 'admin' %}
-            <a href="{{ url_for('admin_bookings') }}">Registered</a>
-             <a href="{{ url_for('admin_users') }}">Registered Users</a>
-        {% endif %}
+                {% if session['user'] == 'admin' %}
+                    <a href="{{ url_for('admin_bookings') }}">Registered</a>
+                    <a href="{{ url_for('admin_users') }}">Registered Users</a>
+                {% endif %}
 
-        <a href="{{ url_for('logout') }}">Logout</a>
-    {% else %}
-        <a href="{{ url_for('images') }}">Images</a>
-        <a href="{{ url_for('login') }}">Login</a>
-        <a href="{{ url_for('register') }}">Register</a>
-        <a href="{{ url_for('contact') }}">Contact</a>
-    {% endif %}
-</nav>
+                <a href="{{ url_for('logout') }}">Logout</a>
+            {% else %}
+                <a href="{{ url_for('images') }}">Images</a>
+                <a href="{{ url_for('login') }}">Login</a>
+                <a href="{{ url_for('register') }}">Register</a>
+                <a href="{{ url_for('contact') }}">Contact</a>
+            {% endif %}
+        </nav>
     </header>
 
     <main>
+
         {% block content %}{% endblock %}
     </main>
 
     <footer>
-        <p>© 2025 My Flask App</p>
+        <p>© 2026 HOTEL BUFF</p>
     </footer>
 </body>
 </html>

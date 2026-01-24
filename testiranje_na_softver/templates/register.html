@@ -148,6 +148,10 @@
     }
 </style>
 
+
+
+
+
 <div class="register-container">
     <h2>Create Account</h2>
 
@@ -206,7 +210,63 @@
             <span onclick="togglePassword()" style="cursor:pointer;">👁️</span>
         </div>
 
+
+<script>
+    function togglePassword() {
+        const pwd = document.getElementById("password");
+        pwd.type = pwd.type === "password" ? "text" : "password";
+    }
+
+    function checkStrength(password) {
+        const bar = document.getElementById("strengthBar");
+        const text = document.getElementById("strengthText");
+
+        let strength = 0;
+        if (password.length >= 8) strength++;
+        if (/[A-Z]/.test(password)) strength++;
+        if (/[0-9]/.test(password)) strength++;
+        if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+        bar.className = "";
+        bar.style.width = "0%";
+
+        if (strength <= 1) {
+            bar.style.width = "33%";
+            bar.classList.add("weak");
+            text.textContent = "Weak password";
+        } else if (strength <= 3) {
+            bar.style.width = "66%";
+            bar.classList.add("medium");
+            text.textContent = "Medium strength";
+        } else {
+            bar.style.width = "100%";
+            bar.classList.add("strong");
+            text.textContent = "Strong password";
+        }
+    }
+
+    // ✅ Check password match before submit
+    document.querySelector("form").addEventListener("submit", function(e) {
+        const p1 = document.getElementById("password").value;
+        const p2 = document.getElementById("confirm_password").value;
+
+        if (p1 !== p2) {
+            alert("❌ Passwords do not match!");
+            e.preventDefault();
+        }
+    });
+</script>
+
+
+
         <!-- Strength indicator -->
+        <!-- Confirm Password -->
+<label>Confirm Password</label>
+<div class="input-group">
+    <input type="password" id="confirm_password" name="confirm_password" required>
+    <span>🔒</span>
+</div>
+        
         <div class="strength-bar">
             <div id="strengthBar"></div>
         </div>
@@ -253,5 +313,7 @@
             text.textContent = "Strong password";
         }
     }
+
+
 </script>
 {% endblock %}
