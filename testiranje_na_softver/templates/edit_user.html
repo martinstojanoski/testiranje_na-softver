@@ -3,106 +3,431 @@
 
 {% block content %}
 <style>
-    body {
-        background-color: #121212;
-        color: #ffffff;
-        font-family: Arial, sans-serif;
-    }
+  :root{
+    --bg1:#0b0b0c;
+    --card: rgba(20,20,22,.62);
+    --stroke: rgba(255,215,0,.18);
+    --gold:#ffd700;
+    --gold2:#c9a200;
+    --text:#f2f2f2;
+    --muted:#b9b9b9;
+    --danger:#ff4d4d;
+    --ok:#4dff8b;
+    --vio:#bb86fc;
+  }
 
-    .edit-container {
-        max-width: 420px;
-        margin: 80px auto;
-        background-color: #1e1e1e;
-        padding: 32px;
-        border-radius: 18px;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
-    }
+  body{
+    background:
+      radial-gradient(900px 520px at 20% 0%, rgba(255,215,0,.10), transparent 60%),
+      radial-gradient(700px 420px at 80% 15%, rgba(187,134,252,.10), transparent 55%),
+      radial-gradient(circle at top, #161616, #0b0b0c 55%, #070708);
+    color: var(--text);
+    font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    overflow-x:hidden;
+  }
 
-    h2 {
-        text-align: center;
-        margin-bottom: 25px;
-        color: #f5f5f5;
-    }
+  /* particles */
+  .bg-particles{
+    position: fixed;
+    inset: 0;
+    pointer-events:none;
+    z-index: 0;
+    opacity: .55;
+  }
+  .p{
+    position:absolute;
+    width: 6px; height: 6px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(255,215,0,.9), rgba(255,215,0,.05));
+    animation: float 9s ease-in-out infinite;
+  }
+  .p:nth-child(1){ left:10%; top:22%; animation-duration:10s; transform: scale(.8); }
+  .p:nth-child(2){ left:22%; top:76%; animation-duration:11s; transform: scale(.6); }
+  .p:nth-child(3){ left:60%; top:18%; animation-duration:12s; transform: scale(.7); }
+  .p:nth-child(4){ left:84%; top:60%; animation-duration:13s; transform: scale(.9); }
+  .p:nth-child(5){ left:50%; top:82%; animation-duration:14s; transform: scale(.55); }
+  @keyframes float{
+    0%,100%{ transform: translateY(0) translateX(0); opacity:.55; }
+    50%{ transform: translateY(-18px) translateX(10px); opacity:.9; }
+  }
 
-    label {
-        display: block;
-        margin-bottom: 6px;
-        font-weight: bold;
-        color: #e0e0e0;
-    }
+  .wrap{
+    position: relative;
+    z-index: 1;
+    min-height: calc(100vh - 160px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 70px 14px;
+  }
 
-    input, select {
-        width: 100%;
-        padding: 12px;
-        margin-bottom: 18px;
-        border: none;
-        border-radius: 8px;
-        background-color: #2a2a2a;
-        color: #ffffff;
-    }
+  .shell{
+    width: 100%;
+    max-width: 980px;
+    display:grid;
+    grid-template-columns: 1.05fr .95fr;
+    gap: 22px;
+    align-items: stretch;
+  }
 
-    input:focus, select:focus {
-        outline: none;
-        box-shadow: 0 0 6px #6200ea;
-        background-color: #333;
-    }
+  /* LEFT brand panel */
+  .brand-panel{
+    border-radius: 24px;
+    background:
+      linear-gradient(145deg, rgba(255,215,0,.08), rgba(0,0,0,.0) 35%),
+      linear-gradient(145deg, #151516, #0e0e10);
+    border: 1px solid rgba(255,215,0,.16);
+    box-shadow: 0 22px 55px rgba(0,0,0,.75);
+    padding: 34px;
+    overflow:hidden;
+    position: relative;
+  }
+  .brand-panel::before{
+    content:"";
+    position:absolute;
+    inset:-120px -160px auto auto;
+    width: 420px; height: 420px;
+    background: radial-gradient(circle, rgba(255,215,0,.20), transparent 60%);
+    transform: rotate(15deg);
+    pointer-events:none;
+  }
 
-    button {
-        width: 100%;
-        padding: 14px;
-        border: none;
-        border-radius: 8px;
-        background-color: #6200ea;
-        color: #ffffff;
-        font-size: 16px;
-        cursor: pointer;
-        transition: 0.3s;
-    }
+  .brand-top{
+    display:flex;
+    align-items:center;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
 
-    button:hover {
-        background-color: #7c4dff;
-    }
+  .logo-hero{
+    width: 76px;
+    height: 76px;
+    border-radius: 18px;
+    background: rgba(0,0,0,.25);
+    border: 1px solid rgba(255,215,0,.22);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position: relative;
+    overflow:hidden;
+    animation: pop 900ms ease-out both;
+  }
+  .logo-hero::after{
+    content:"";
+    position:absolute;
+    inset:-40px;
+    background: linear-gradient(120deg, transparent 35%, rgba(255,215,0,.22) 50%, transparent 65%);
+    transform: translateX(-60%) rotate(10deg);
+    animation: shine 2.6s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes shine{
+    0%{ transform: translateX(-70%) rotate(10deg); opacity:.25; }
+    35%{ opacity:.8; }
+    100%{ transform: translateX(70%) rotate(10deg); opacity:.25; }
+  }
+  @keyframes pop{
+    0%{ transform: scale(.75); opacity:0; }
+    70%{ transform: scale(1.06); opacity:1; }
+    100%{ transform: scale(1); }
+  }
+  .logo-hero img{ width: 56px; height:auto; }
 
-    .back-link {
-        margin-top: 20px;
-        text-align: center;
-    }
+  .brand-title h1{
+    margin:0;
+    font-size: 22px;
+    letter-spacing: 1.2px;
+    color: var(--gold);
+  }
+  .brand-title p{
+    margin:6px 0 0 0;
+    color: var(--muted);
+    font-size: 13.5px;
+    line-height: 1.45;
+  }
 
-    .back-link a {
-        color: #bb86fc;
-        text-decoration: none;
-    }
+  .brand-features{
+    margin-top: 18px;
+    display:grid;
+    gap: 10px;
+  }
+  .feat{
+    display:flex;
+    gap: 10px;
+    align-items:flex-start;
+    padding: 12px 12px;
+    border-radius: 14px;
+    background: rgba(255,255,255,.03);
+    border: 1px solid rgba(255,215,0,.10);
+  }
+  .dot{
+    width: 10px; height: 10px;
+    border-radius: 999px;
+    margin-top: 4px;
+    background: radial-gradient(circle, rgba(255,215,0,1), rgba(255,215,0,.15));
+    box-shadow: 0 0 14px rgba(255,215,0,.25);
+    flex: 0 0 auto;
+  }
+  .feat b{ color:#f7f2d3; font-weight: 700; display:block; margin-bottom: 2px; }
+  .feat span{ color:#cfcfcf; font-size: 13px; line-height: 1.4; }
+
+  .brand-actions{ margin-top:16px; display:flex; gap:10px; flex-wrap:wrap; }
+  .link-btn{
+    padding:12px 14px;
+    border-radius: 14px;
+    text-decoration:none;
+    font-weight: 900;
+    font-size: 14px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    transition:.25s;
+  }
+  .link-btn.primary{
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color:#151515;
+    box-shadow: 0 10px 24px rgba(255,215,0,.18);
+  }
+  .link-btn.primary:hover{ transform: translateY(-2px); box-shadow: 0 14px 34px rgba(255,215,0,.26); }
+  .link-btn.secondary{
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,215,0,.14);
+    color:#eee;
+  }
+  .link-btn.secondary:hover{ background: rgba(255,255,255,.06); transform: translateY(-1px); }
+
+  /* RIGHT card */
+  .card{
+    border-radius: 24px;
+    background: var(--card);
+    border: 1px solid var(--stroke);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 22px 55px rgba(0,0,0,.78);
+    padding: 34px 30px;
+    position: relative;
+    overflow:hidden;
+    animation: cardIn 700ms ease both;
+  }
+  @keyframes cardIn{
+    from{ opacity:0; transform: translateY(18px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+  .card::before{
+    content:"";
+    position:absolute;
+    inset: -80px auto auto -120px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(255,215,0,.12), transparent 60%);
+    pointer-events:none;
+  }
+
+  .head{ margin-bottom: 14px; text-align:left; }
+  .head h2{ margin:0; font-size: 22px; letter-spacing: .6px; color: #fff; }
+  .head p{ margin: 8px 0 0; color: var(--muted); font-size: 13.5px; }
+
+  /* Flash */
+  .flash{
+    padding: 12px;
+    margin: 14px 0 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    text-align:center;
+    border-left: 4px solid transparent;
+    background: rgba(255,255,255,.04);
+  }
+  .flash.success{ border-left-color: var(--ok); color:#d8ffe5; background: rgba(30,95,43,.35); }
+  .flash.error{ border-left-color: var(--danger); color:#ffd0d0; background: rgba(59,29,29,.55); }
+  .flash.info{ border-left-color: var(--vio); color:#e5d4ff; background: rgba(43,29,59,.55); }
+
+  /* form controls */
+  .field{ text-align:left; margin-top: 10px; }
+  .field label{
+    display:block;
+    margin-bottom: 6px;
+    font-weight: 700;
+    color: #e8e8e8;
+    font-size: 13px;
+  }
+  .control{ position: relative; }
+  .control input, .control select{
+    width: 100%;
+    padding: 13px 44px 13px 14px;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 14px;
+    background: rgba(0,0,0,.28);
+    color: #fff;
+    font-size: 15px;
+    outline:none;
+    transition: .22s;
+    appearance:none;
+  }
+  .control input:focus, .control select:focus{
+    border-color: rgba(255,215,0,.50);
+    box-shadow: 0 0 0 4px rgba(255,215,0,.10);
+    background: rgba(0,0,0,.38);
+  }
+  .icon{
+    position:absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px; height: 34px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,215,0,.18);
+    background: rgba(255,215,0,.08);
+    color: var(--gold);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    user-select:none;
+    pointer-events:none;
+  }
+
+  .row{ display:flex; gap:10px; margin-top: 14px; flex-wrap:wrap; }
+
+  .btn{
+    flex: 1 1 auto;
+    padding: 14px;
+    border: none;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 900;
+    cursor:pointer;
+    letter-spacing: .5px;
+    transition:.25s;
+    text-align:center;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+  }
+  .btn.primary{
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: #151515;
+    box-shadow: 0 10px 24px rgba(255,215,0,.18);
+  }
+  .btn.primary:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 14px 34px rgba(255,215,0,.26);
+    background: linear-gradient(135deg, #ffe44d, #d4b200);
+  }
+  .btn.secondary{
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,215,0,.14);
+    color:#eee;
+  }
+  .btn.secondary:hover{ background: rgba(255,255,255,.06); transform: translateY(-1px); }
+
+  .note{
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 13px;
+    text-align:center;
+  }
+
+  @media(max-width: 980px){
+    .shell{ grid-template-columns: 1fr; max-width: 620px; }
+    .brand-panel{ display:none; }
+    .wrap{ padding: 60px 14px; }
+  }
 </style>
 
-<div class="edit-container">
-    <h2>Edit User</h2>
-
-    <!-- Flash messages -->
-    {% with messages = get_flashed_messages(with_categories=True) %}
-        {% if messages %}
-            {% for category, msg in messages %}
-                <div class="flash {{ category }}">{{ msg }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-    <form method="POST">
-
-        <label>Username</label>
-        <input type="text" name="username" value="{{ u.username }}" required>
-
-        <label>Role</label>
-        <select name="role">
-            <option value="user" {% if u.role == "user" %}selected{% endif %}>User</option>
-            <option value="admin" {% if u.role == "admin" %}selected{% endif %}>Admin</option>
-        </select>
-
-        <button type="submit">Save Changes</button>
-    </form>
-
-    <div class="back-link">
-        <a href="{{ url_for('admin_users') }}">← Back to Users</a>
-    </div>
+<div class="bg-particles" aria-hidden="true">
+  <span class="p"></span><span class="p"></span><span class="p"></span><span class="p"></span><span class="p"></span>
 </div>
 
+<div class="wrap">
+  <div class="shell">
+
+    <!-- LEFT -->
+    <section class="brand-panel">
+      <div class="brand-top">
+        <div class="logo-hero">
+          <img src="{{ url_for('static', filename='images/logo.png') }}" alt="HOTEL BUFF">
+        </div>
+        <div class="brand-title">
+          <h1>HOTEL BUFF • Admin</h1>
+          <p>Manage user identity and access permissions securely.</p>
+        </div>
+      </div>
+
+      <div class="brand-features">
+        <div class="feat">
+          <span class="dot"></span>
+          <div>
+            <b>Identity</b>
+            <span>Edit username with validation rules.</span>
+          </div>
+        </div>
+        <div class="feat">
+          <span class="dot"></span>
+          <div>
+            <b>Role Control</b>
+            <span>Promote to <b>admin</b> or set back to <b>user</b>.</span>
+          </div>
+        </div>
+        <div class="feat">
+          <span class="dot"></span>
+          <div>
+            <b>Premium UI</b>
+            <span>Black & gold theme consistent across pages.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="brand-actions">
+        <a class="link-btn secondary" href="{{ url_for('admin_users') }}">← Back to Users</a>
+        <a class="link-btn primary" href="{{ url_for('admin_change_user_password', user_id=u.id) }}">🔑 Change Password</a>
+      </div>
+    </section>
+
+    <!-- RIGHT -->
+    <section class="card">
+      <div class="head">
+        <h2>Edit User</h2>
+        <p>Updating: <b>{{ u.username }}</b></p>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+          {% for category, msg in messages %}
+            <div class="flash {{ category }}">{{ msg }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" autocomplete="on">
+        <div class="field">
+          <label>Username</label>
+          <div class="control">
+            <input type="text" name="username" value="{{ u.username }}" required>
+            <div class="icon">👤</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Role</label>
+          <div class="control">
+            <select name="role">
+              <option value="user" {% if u.role == "user" %}selected{% endif %}>User</option>
+              <option value="admin" {% if u.role == "admin" %}selected{% endif %}>Admin</option>
+            </select>
+            <div class="icon">🛡️</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <button class="btn primary" type="submit">Save Changes</button>
+          <a class="btn secondary" href="{{ url_for('admin_users') }}">Cancel</a>
+        </div>
+
+        <div class="note">Tip: Role changes apply immediately for protected admin routes.</div>
+      </form>
+    </section>
+
+  </div>
+</div>
 {% endblock %}

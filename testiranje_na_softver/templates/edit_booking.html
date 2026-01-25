@@ -2,29 +2,274 @@
 {% block title %}Edit Booking{% endblock %}
 
 {% block content %}
-<div class="checkin-container">
-    <h2>Edit Booking</h2>
+<style>
+:root{
+  --bg1:#0b0b0c;
+  --card: rgba(20,20,22,.62);
+  --stroke: rgba(255,215,0,.18);
+  --gold:#ffd700;
+  --gold2:#c9a200;
+  --text:#f2f2f2;
+  --muted:#b9b9b9;
+  --danger:#ff4d4d;
+  --ok:#4dff8b;
+}
 
-    <form method="POST">
-        <label>First Name</label>
-        <input type="text" name="first_name" value="{{ booking.first_name }}" required>
+body{
+  background:
+    radial-gradient(900px 520px at 20% 0%, rgba(255,215,0,.10), transparent 60%),
+    radial-gradient(700px 420px at 80% 15%, rgba(187,134,252,.10), transparent 55%),
+    radial-gradient(circle at top, #161616, #0b0b0c 55%, #070708);
+  color: var(--text);
+  font-family: "Segoe UI", system-ui, Arial, sans-serif;
+  overflow-x:hidden;
+}
 
-        <label>Last Name</label>
-        <input type="text" name="last_name" value="{{ booking.last_name }}" required>
+/* particles */
+.bg-particles{ position: fixed; inset:0; pointer-events:none; z-index:0; opacity:.55; }
+.p{
+  position:absolute; width:6px; height:6px; border-radius:999px;
+  background: radial-gradient(circle, rgba(255,215,0,.9), rgba(255,215,0,.05));
+  animation: float 9s ease-in-out infinite;
+}
+.p:nth-child(1){ left:10%; top:22%; }
+.p:nth-child(2){ left:22%; top:76%; }
+.p:nth-child(3){ left:60%; top:18%; }
+.p:nth-child(4){ left:84%; top:60%; }
+.p:nth-child(5){ left:50%; top:82%; }
+@keyframes float{
+  0%,100%{ transform: translateY(0) translateX(0); opacity:.55; }
+  50%{ transform: translateY(-18px) translateX(10px); opacity:.9; }
+}
 
-        <label>Email</label>
-        <input type="email" name="email" value="{{ booking.email }}" required>
+.wrap{
+  position: relative; z-index:1;
+  min-height: calc(100vh - 160px);
+  display:flex; align-items:center; justify-content:center;
+  padding: 70px 14px;
+}
 
-        <label>Phone</label>
-        <input type="text" name="phone" value="{{ booking.phone }}" required>
+.shell{
+  width:100%;
+  max-width: 980px;
+  display:grid;
+  grid-template-columns: 1.05fr .95fr;
+  gap: 22px;
+}
 
-        <label>Check-in Date</label>
-        <input type="date" name="checkin_date" value="{{ booking.checkin_date }}" required>
+/* LEFT PANEL */
+.brand-panel{
+  border-radius: 24px;
+  background:
+    linear-gradient(145deg, rgba(255,215,0,.08), rgba(0,0,0,.0) 35%),
+    linear-gradient(145deg, #151516, #0e0e10);
+  border: 1px solid rgba(255,215,0,.16);
+  box-shadow: 0 22px 55px rgba(0,0,0,.75);
+  padding: 34px;
+  position: relative;
+  overflow:hidden;
+}
 
-        <label>Check-out Date</label>
-        <input type="date" name="checkout_date" value="{{ booking.checkout_date }}" required>
+.brand-top{ display:flex; gap:14px; align-items:center; margin-bottom:18px; }
 
-        <button type="submit">Save Changes</button>
-    </form>
+.logo-hero{
+  width:76px; height:76px;
+  border-radius:18px;
+  background: rgba(0,0,0,.25);
+  border:1px solid rgba(255,215,0,.22);
+  display:flex; align-items:center; justify-content:center;
+}
+.logo-hero img{ width:56px; }
+
+.brand-title h1{
+  margin:0;
+  font-size: 22px;
+  letter-spacing:1.2px;
+  color: var(--gold);
+}
+.brand-title p{
+  margin:6px 0 0;
+  color: var(--muted);
+  font-size: 13.5px;
+}
+
+/* RIGHT CARD */
+.card{
+  border-radius: 24px;
+  background: var(--card);
+  border: 1px solid var(--stroke);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 22px 55px rgba(0,0,0,.78);
+  padding: 34px 30px;
+  position: relative;
+}
+
+.head h2{ margin:0; font-size:22px; }
+.head p{ margin:6px 0 0; color:var(--muted); font-size:13px; }
+
+/* Flash */
+.flash{
+  padding:12px;
+  margin: 14px 0;
+  border-radius:12px;
+  font-size:14px;
+  text-align:center;
+  border-left:4px solid transparent;
+  background: rgba(255,255,255,.04);
+}
+.flash.success{ border-left-color: var(--ok); color:#d8ffe5; background: rgba(30,95,43,.35); }
+.flash.error{ border-left-color: var(--danger); color:#ffd0d0; background: rgba(59,29,29,.55); }
+
+/* Fields */
+.field{ margin-top:10px; }
+.field label{ display:block; margin-bottom:6px; font-weight:700; font-size:13px; }
+
+.control{ position:relative; }
+.control input{
+  width:100%;
+  padding:13px 44px 13px 14px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;
+  background: rgba(0,0,0,.28);
+  color:#fff;
+}
+.control input:focus{
+  border-color: rgba(255,215,0,.50);
+  box-shadow: 0 0 0 4px rgba(255,215,0,.10);
+}
+
+.icon{
+  position:absolute;
+  right:10px; top:50%;
+  transform:translateY(-50%);
+  width:34px; height:34px;
+  border-radius:12px;
+  border:1px solid rgba(255,215,0,.18);
+  background: rgba(255,215,0,.08);
+  display:flex; align-items:center; justify-content:center;
+}
+
+/* Buttons */
+.btn{
+  width:100%;
+  margin-top:14px;
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  color:#151515;
+  font-size:16px;
+  font-weight:900;
+  cursor:pointer;
+  transition:.25s;
+}
+.btn:hover{ transform:translateY(-2px); }
+
+.link{
+  margin-top:12px;
+  text-align:center;
+}
+.link a{ color: var(--gold); text-decoration:none; font-weight:900; }
+
+@media(max-width: 980px){
+  .shell{ grid-template-columns: 1fr; max-width: 620px; }
+  .brand-panel{ display:none; }
+}
+</style>
+
+<div class="bg-particles">
+  <span class="p"></span><span class="p"></span><span class="p"></span><span class="p"></span><span class="p"></span>
+</div>
+
+<div class="wrap">
+  <div class="shell">
+
+    <!-- LEFT -->
+    <section class="brand-panel">
+      <div class="brand-top">
+        <div class="logo-hero">
+          <img src="{{ url_for('static', filename='images/logo.png') }}" alt="HOTEL BUFF">
+        </div>
+        <div class="brand-title">
+          <h1>HOTEL BUFF</h1>
+          <p>Edit guest reservation details securely.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT -->
+    <section class="card">
+      <div class="head">
+        <h2>Edit Booking</h2>
+        <p>Update guest information and stay dates.</p>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+          {% for category, msg in messages %}
+            <div class="flash {{ category }}">{{ msg }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST">
+
+        <div class="field">
+          <label>First Name</label>
+          <div class="control">
+            <input type="text" name="first_name" value="{{ booking.first_name }}" required>
+            <div class="icon">🧑</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Last Name</label>
+          <div class="control">
+            <input type="text" name="last_name" value="{{ booking.last_name }}" required>
+            <div class="icon">🧑</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Email</label>
+          <div class="control">
+            <input type="email" name="email" value="{{ booking.email }}" required>
+            <div class="icon">📧</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Phone</label>
+          <div class="control">
+            <input type="text" name="phone" value="{{ booking.phone }}" required>
+            <div class="icon">📞</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Check-in Date</label>
+          <div class="control">
+            <input type="date" name="checkin_date" value="{{ booking.checkin_date }}" required>
+            <div class="icon">📅</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Check-out Date</label>
+          <div class="control">
+            <input type="date" name="checkout_date" value="{{ booking.checkout_date }}" required>
+            <div class="icon">📅</div>
+          </div>
+        </div>
+
+        <button class="btn" type="submit">Save Changes</button>
+
+        <div class="link">
+          <a href="{{ url_for('admin_bookings') }}">← Back to Bookings</a>
+        </div>
+      </form>
+    </section>
+
+  </div>
 </div>
 {% endblock %}

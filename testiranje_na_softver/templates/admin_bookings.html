@@ -2,216 +2,628 @@
 {% block title %}Registered Guests{% endblock %}
 
 {% block content %}
-
-{% with messages = get_flashed_messages(with_categories=True) %}
-    {% if messages %}
-        {% for category, msg in messages %}
-            <div class="flash {{ category }}">{{ msg }}</div>
-        {% endfor %}
-    {% endif %}
-{% endwith %}
-
-
 <style>
-.delete-btn {
-    background-color: #8b1e1e;
-    border: none;
-    color: #fff;
-    padding: 6px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 13px;
-    transition: 0.3s;
-}
-.delete-btn:hover {
-    background-color: #ff4d4d;
-}
+  :root{
+    --bgA:#070708;
+    --bgB:#101012;
+    --card: rgba(18,18,20,.66);
+    --stroke: rgba(255,215,0,.18);
+    --stroke2: rgba(255,255,255,.10);
+    --gold:#ffd700;
+    --gold2:#c9a200;
+    --text:#f2f2f2;
+    --muted:#b9b9b9;
+    --danger:#ff4d4d;
+    --ok:#4dff8b;
+    --vio:#bb86fc;
+    --cyan:#03dac6;
+  }
 
-body {
-    background-color: #121212;
-    color: #ffffff;
-    font-family: Arial, sans-serif;
-}
+  body{
+    background:
+      radial-gradient(1100px 620px at 18% 0%, rgba(255,215,0,.10), transparent 60%),
+      radial-gradient(860px 520px at 82% 10%, rgba(187,134,252,.10), transparent 58%),
+      radial-gradient(900px 520px at 50% 120%, rgba(3,218,198,.07), transparent 60%),
+      radial-gradient(circle at top, #151516, #0b0b0c 55%, #060607);
+    color: var(--text);
+    font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    overflow-x:hidden;
+  }
 
-.admin-container {
-    max-width: 1100px;
-    margin: 60px auto;
-    background-color: #1e1e1e;
-    padding: 35px;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-}
+  .wrap{
+    padding: 70px 14px;
+    min-height: calc(100vh - 160px);
+    display:flex;
+    justify-content:center;
+  }
 
-h2 {
-    text-align: center;
-    margin-bottom: 30px;
-    font-size: 28px;
-}
-
-table {
+  .shell{
     width: 100%;
-    border-collapse: collapse;
-}
+    max-width: 1200px;
+    display:grid;
+    grid-template-columns: 380px 1fr;
+    gap: 22px;
+    align-items:start;
+  }
 
-thead {
-    background-color: #2a2a2a;
-}
+  /* LEFT PANEL */
+  .brand-panel{
+    border-radius: 26px;
+    background:
+      linear-gradient(145deg, rgba(255,215,0,.09), rgba(0,0,0,.0) 35%),
+      linear-gradient(145deg, #141416, #0b0b0d);
+    border: 1px solid rgba(255,215,0,.16);
+    box-shadow: 0 22px 55px rgba(0,0,0,.78);
+    padding: 34px;
+    position: sticky;
+    top: 26px;
+    overflow:hidden;
+  }
+  .brand-panel::before{
+    content:"";
+    position:absolute;
+    inset:-140px -160px auto auto;
+    width: 460px; height: 460px;
+    background: radial-gradient(circle, rgba(255,215,0,.22), transparent 62%);
+    transform: rotate(18deg);
+    pointer-events:none;
+  }
 
-th, td {
-    padding: 14px;
-    text-align: center;
-    border-bottom: 1px solid #333;
-}
+  .brand-top{ display:flex; gap:14px; align-items:center; }
+  .logo-hero{
+    width: 78px; height: 78px; border-radius: 18px;
+    background: rgba(0,0,0,.25);
+    border: 1px solid rgba(255,215,0,.24);
+    display:flex; align-items:center; justify-content:center;
+    position: relative; overflow:hidden;
+  }
+  .logo-hero::after{
+    content:"";
+    position:absolute; inset:-50px;
+    background: linear-gradient(120deg, transparent 35%, rgba(255,215,0,.26) 50%, transparent 65%);
+    transform: translateX(-60%) rotate(10deg);
+    animation: shine 2.8s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes shine{
+    0%{ transform: translateX(-75%) rotate(10deg); opacity:.25; }
+    35%{ opacity:.9; }
+    100%{ transform: translateX(75%) rotate(10deg); opacity:.22; }
+  }
+  .logo-hero img{ width: 58px; height:auto; }
 
-tbody tr:hover {
-    background-color: #2f2f2f;
-}
+  .brand-title h1{
+    margin:0;
+    font-size: 18px;
+    letter-spacing: 1.15px;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+  .brand-title p{
+    margin:6px 0 0 0;
+    color: var(--muted);
+    font-size: 13.5px;
+    line-height: 1.45;
+  }
 
-.badge {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: bold;
-}
+  .divider{
+    height:1px; margin:16px 0;
+    background: linear-gradient(90deg, transparent, rgba(255,215,0,.22), transparent);
+  }
 
-.badge-checkin {
-    background-color: #6200ea;
-}
+  .mini-cards{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .mini{
+    border-radius: 16px;
+    background: rgba(255,255,255,.03);
+    border: 1px solid rgba(255,215,0,.10);
+    padding: 12px 12px;
+  }
+  .mini span{ display:block; color: var(--muted); font-size: 12px; }
+  .mini b{
+    display:block;
+    margin-top: 6px;
+    font-size: 18px;
+    letter-spacing: .2px;
+    color:#fff;
+  }
 
-.badge-checkout {
-    background-color: #b00020;
-    color: #ffb4b4;
-}
+  .brand-actions{ margin-top:16px; display:flex; gap:10px; flex-wrap:wrap; }
+  .btn{
+    padding:10px 14px; border-radius:14px; border:none;
+    cursor:pointer; font-size:14px; font-weight:900;
+    transition:.25s; text-decoration:none;
+    display:inline-flex; align-items:center; gap:8px;
+    user-select:none;
+  }
+  .btn.primary{
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color:#151515;
+    box-shadow: 0 10px 24px rgba(255,215,0,.18);
+  }
+  .btn.primary:hover{ transform: translateY(-1px); box-shadow: 0 14px 34px rgba(255,215,0,.28); }
+  .btn.secondary{
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,215,0,.14);
+    color:#eee;
+  }
+  .btn.secondary:hover{ background: rgba(255,255,255,.06); transform: translateY(-1px); }
 
-.badge-created {
-    background-color: #1e5f2b;
-    color: #4dff8b;
-}
+  /* RIGHT PANEL */
+  .card{
+    border-radius: 26px;
+    background: var(--card);
+    border: 1px solid var(--stroke);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 22px 55px rgba(0,0,0,.82);
+    padding: 22px 22px 18px;
+    position: relative;
+    overflow:hidden;
+  }
+  .card::before{
+    content:"";
+    position:absolute;
+    inset: -120px auto auto -160px;
+    width: 360px; height: 360px;
+    background: radial-gradient(circle, rgba(255,215,0,.12), transparent 60%);
+    pointer-events:none;
+  }
 
-.back-link {
-    margin-top: 25px;
-    text-align: center;
-}
-.back-link a {
-    color: #bb86fc;
-    text-decoration: none;
-}
+  .topbar{
+    position: relative;
+    display:flex;
+    justify-content:space-between;
+    gap: 12px;
+    align-items:flex-start;
+    margin-bottom: 14px;
+  }
+  .title h2{ margin:0; font-size: 20px; letter-spacing:.6px; color:#fff; }
+  .title p{ margin:6px 0 0; color: var(--muted); font-size: 13.5px; }
 
-
-/* Flash Messages (success / error) */
-.flash {
+  .flash{
     padding: 12px;
-    margin-bottom: 20px;
-    border-radius: 8px;
+    margin: 10px 0 0;
+    border-radius: 14px;
     font-size: 14px;
-    text-align: center;
-}
+    text-align:center;
+    border-left: 4px solid transparent;
+    background: rgba(255,255,255,.04);
+  }
+  .flash.success{ border-left-color: var(--ok); color:#d8ffe5; background: rgba(30,95,43,.35); }
+  .flash.error{ border-left-color: var(--danger); color:#ffd0d0; background: rgba(59,29,29,.55); }
+  .flash.info{ border-left-color: var(--vio); color:#e5d4ff; background: rgba(43,29,59,.55); }
 
-.flash.error {
-    background-color: #8b1e1e;
-    border-left: 4px solid #ff4d4d;
+  /* Controls (no backend needed) */
+  .controls{
+    margin-top: 14px;
+    display:flex; gap:10px; flex-wrap:wrap;
+    background: rgba(0,0,0,.18);
+    border: 1px solid rgba(255,215,0,.10);
+    padding: 12px;
+    border-radius: 18px;
+  }
+  .ctrl{
+    position: relative;
+    flex: 1 1 260px;
+    min-width: 240px;
+  }
+  .ctrl input, .ctrl select{
+    width: 100%;
+    background: rgba(0,0,0,.28);
+    border: 1px solid rgba(255,255,255,.10);
     color: #fff;
-}
+    padding: 12px 12px 12px 40px;
+    border-radius: 14px;
+    outline:none;
+    transition: .22s;
+    font-size: 14px;
+  }
+  .ctrl input:focus, .ctrl select:focus{
+    border-color: rgba(255,215,0,.55);
+    box-shadow: 0 0 0 4px rgba(255,215,0,.10);
+  }
+  .ctrl .ic{
+    position:absolute; left: 12px; top: 50%;
+    transform: translateY(-50%);
+    width: 22px; height: 22px;
+    display:flex; align-items:center; justify-content:center;
+    color: var(--gold);
+    user-select:none;
+  }
 
-.flash.success {
-    background-color: #1e5f2b;
-    border-left: 4px solid #4dff8b;
-    color: #d8ffe5;
-}
+  /* List */
+  .list{
+    margin-top: 14px;
+    display:grid;
+    gap: 12px;
+  }
 
+  .item{
+    border-radius: 20px;
+    border: 1px solid rgba(255,215,0,.12);
+    background: rgba(0,0,0,.18);
+    overflow:hidden;
+    transition: .18s ease;
+    position: relative;
+  }
+  .item:hover{
+    transform: translateY(-1px);
+    border-color: rgba(255,215,0,.22);
+    box-shadow: 0 14px 28px rgba(0,0,0,.55);
+  }
 
+  .item-inner{
+    padding: 16px;
+    display:grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 14px;
+    align-items: center;
+  }
 
+  /* Left block: guest */
+  .guest{
+    display:flex;
+    gap: 12px;
+    align-items:center;
+    min-width: 0;
+  }
+  .avatar{
+    width: 44px; height: 44px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,215,0,.18);
+    background: linear-gradient(145deg, rgba(255,215,0,.14), rgba(255,255,255,.02));
+    display:flex; align-items:center; justify-content:center;
+    color: var(--gold);
+    font-weight: 1000;
+    letter-spacing: .4px;
+    flex: 0 0 auto;
+  }
+  .gmeta{ min-width:0; }
+  .gname{
+    font-weight: 1000;
+    color:#fff;
+    letter-spacing: .2px;
+    white-space: nowrap;
+    overflow:hidden;
+    text-overflow: ellipsis;
+  }
+  .gsub{
+    margin-top: 6px;
+    display:flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .chip{
+    display:inline-flex; align-items:center; gap:8px;
+    padding: 7px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.03);
+    color:#e8e8e8;
+    font-weight: 800;
+  }
+  .chip button{
+    border:0; background:transparent; cursor:pointer;
+    color: var(--gold);
+    font-weight: 900;
+  }
 
+  /* Right block: dates + status + actions */
+  .right{
+    display:flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items:flex-end;
+  }
 
+  .badges{
+    display:flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content:flex-end;
+  }
 
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding: 7px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: .25px;
+    border: 1px solid rgba(255,255,255,.10);
+    background: rgba(0,0,0,.20);
+    color:#fff;
+  }
+  .badge i{
+    width: 8px; height: 8px; border-radius: 999px;
+    background: rgba(255,255,255,.35);
+    display:inline-block;
+  }
+  .b-upcoming{ border-color: rgba(187,134,252,.35); background: rgba(98,0,234,.18); color:#eadfff; }
+  .b-upcoming i{ background: rgba(187,134,252,.9); }
+  .b-active{ border-color: rgba(77,255,139,.35); background: rgba(30,95,43,.30); color:#c8ffe0; }
+  .b-active i{ background: rgba(77,255,139,.95); }
+  .b-ended{ border-color: rgba(255,77,77,.35); background: rgba(255,77,77,.10); color:#ffd0d0; }
+  .b-ended i{ background: rgba(255,77,77,.95); }
+
+  .b-days{ border-color: rgba(255,215,0,.22); background: rgba(255,215,0,.10); color:#f7f2d3; }
+  .b-created{ border-color: rgba(3,218,198,.25); background: rgba(3,218,198,.10); color:#d6fffb; }
+
+  .actions{
+    display:flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content:flex-end;
+  }
+  .a-btn{
+    border-radius: 14px;
+    padding: 10px 12px;
+    border: 1px solid rgba(255,215,0,.14);
+    background: rgba(255,255,255,.03);
+    color:#eee;
+    cursor:pointer;
+    font-weight: 900;
+    transition:.2s;
+    text-decoration:none;
+    display:inline-flex; align-items:center; gap:8px;
+  }
+  .a-btn:hover{
+    background: rgba(255,255,255,.06);
+    transform: translateY(-1px);
+  }
+  .a-btn.danger{
+    border-color: rgba(255,77,77,.25);
+    background: rgba(255,77,77,.08);
+    color:#ffd0d0;
+  }
+  .a-btn.danger:hover{ background: rgba(255,77,77,.14); }
+
+  .empty{
+    padding: 22px;
+    text-align:center;
+    color: var(--muted);
+    border-radius: 18px;
+    border: 1px solid rgba(255,215,0,.10);
+    background: rgba(0,0,0,.18);
+    margin-top: 14px;
+  }
+
+  @media(max-width: 1100px){
+    .shell{ grid-template-columns: 1fr; max-width: 980px; }
+    .brand-panel{ position: relative; top:auto; }
+    .item-inner{ grid-template-columns: 1fr; align-items: start; }
+    .right{ align-items:flex-start; }
+    .badges, .actions{ justify-content:flex-start; }
+  }
 </style>
 
-<div class="admin-container">
-    <h2>Registered Guests</h2>
+<div class="wrap">
+  <div class="shell">
 
-    {% if bookings %}
-    <table>
-        <thead>
-    <tr>
-        <th>ID</th>
-        <th>Guest</th>
-        <th>Email</th>
-        <th>Phone</th>
-        <th>Check-In Date</th>
-        <th>Check-Out Date</th>
-        <th>Days</th>
-        <th>Created</th>
-        <th>Actions</th>
-    </tr>
-</thead>
-        
+    <!-- LEFT -->
+    <section class="brand-panel">
+      <div class="brand-top">
+        <div class="logo-hero">
+          <img src="{{ url_for('static', filename='images/logo.png') }}" alt="HOTEL BUFF">
+        </div>
+        <div class="brand-title">
+          <h1>HOTEL BUFF</h1>
+          <p>Registered Guests • Premium list view without horizontal scrolling.</p>
+        </div>
+      </div>
 
-<tbody>
-    {% for b in bookings %}
-    <tr>
-        <td>{{ b.id }}</td>
-        <td>{{ b.first_name }} {{ b.last_name }}</td>
-        <td>{{ b.email }}</td>
-        <td>{{ b.phone }}</td>
+      <div class="divider"></div>
 
-        <td>
-            <span class="badge badge-checkin">
-                {{ b.checkin_date }}
-            </span>
-        </td>
+      <!-- Stats computed in JS -->
+      <div class="mini-cards">
+        <div class="mini"><span>Total</span><b id="statTotal">0</b></div>
+        <div class="mini"><span>Active</span><b id="statActive">0</b></div>
+        <div class="mini"><span>Upcoming</span><b id="statUpcoming">0</b></div>
+        <div class="mini"><span>Ended</span><b id="statEnded">0</b></div>
+      </div>
 
-        <td>
-            <span class="badge badge-checkout">
-                {{ b.checkout_date }}
-            </span>
-        </td>
+      <div class="brand-actions">
+        <a class="btn secondary" href="{{ url_for('admin_panel') }}">← Back to Admin</a>
+        <a class="btn primary" href="{{ url_for('booking') }}">+ New Booking</a>
+      </div>
+    </section>
 
-<td>
-    <span class="badge" style="background:#03dac6; color:#000;">
-        {{ b.stay_days }} 
-    </span>
-</td>
+    <!-- RIGHT -->
+    <section class="card">
+      <div class="topbar">
+        <div class="title">
+          <h2>Registered Guests</h2>
+          <p>Full list view with search + status filter (premium readability).</p>
+        </div>
+      </div>
 
+      {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+          {% for category, msg in messages %}
+            <div class="flash {{ category }}">{{ msg }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
 
-        <td>
-            <span class="badge badge-created">
-                {{ b.created_at }}
-            </span>
-        </td>
+      <div class="controls">
+        <div class="ctrl">
+          <div class="ic">🔎</div>
+          <input id="q" type="text" placeholder="Search guest / email / phone...">
+        </div>
 
-        <td style="display:flex; gap:8px; justify-content:center;">
-    <!-- EDIT -->
-    <a href="{{ url_for('edit_booking', booking_id=b.id) }}"
-       style="
-        background:#3f51b5;
-        color:white;
-        padding:6px 12px;
-        border-radius:8px;
-        font-size:13px;
-        text-decoration:none;
-       ">
-        Edit
-    </a>
+        <div class="ctrl" style="flex:0 0 260px;">
+          <div class="ic">🏷️</div>
+          <select id="statusFilter">
+            <option value="">All statuses</option>
+            <option value="active">Active</option>
+            <option value="upcoming">Upcoming</option>
+            <option value="ended">Ended</option>
+          </select>
+        </div>
+      </div>
 
-    <!-- DELETE -->
-    <form method="POST"
-          action="{{ url_for('delete_booking', booking_id=b.id) }}"
-          onsubmit="return confirm('Are you sure you want to delete this booking?');">
-        <button type="submit" class="delete-btn">Delete</button>
-    </form>
-</td>
-    </tr>
-    {% endfor %}
-</tbody>
+      {% if bookings %}
+      <div class="list" id="list">
+        {% for b in bookings %}
+        <article class="item row"
+                 data-guest="{{ (b.first_name ~ ' ' ~ b.last_name)|lower }}"
+                 data-email="{{ b.email|lower }}"
+                 data-phone="{{ b.phone|lower }}"
+                 data-checkin="{{ b.checkin_date }}"
+                 data-checkout="{{ b.checkout_date }}"
+                 data-created="{{ b.created_at }}">
+          <div class="item-inner">
 
-    </table>
-    {% else %}
-        <p style="text-align:center;">No registered guests yet.</p>
-    {% endif %}
+            <div class="guest">
+              <div class="avatar">{{ (b.first_name[:1] ~ b.last_name[:1])|upper }}</div>
 
-    <div class="back-link">
-        <a href="{{ url_for('booking') }}">← Back to Admin Panel</a>
-    </div>
+              <div class="gmeta">
+                <div class="gname">{{ b.first_name }} {{ b.last_name }}</div>
+
+                <div class="gsub">
+                  <span class="chip">
+                    📧 <span>{{ b.email }}</span>
+                    <button type="button" onclick="copyText('{{ b.email }}')" title="Copy email">📋</button>
+                  </span>
+
+                  <span class="chip">
+                    📞 <span>{{ b.phone }}</span>
+                    <button type="button" onclick="copyText('{{ b.phone }}')" title="Copy phone">📋</button>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="right">
+              <div class="badges">
+                <span class="badge b-days"><i></i>{{ b.stay_days }} days</span>
+                <span class="badge b-created"><i></i>{{ b.created_at }}</span>
+                <span class="badge" style="border-color:rgba(255,215,0,.16); background:rgba(255,215,0,.08); color:#f7f2d3;">
+                  <i style="background:rgba(255,215,0,.95)"></i>
+                  {{ b.checkin_date }} → {{ b.checkout_date }}
+                </span>
+
+                <!-- status injected by JS -->
+                <span class="badge status-badge"></span>
+              </div>
+
+              <div class="actions">
+                <a class="a-btn" href="{{ url_for('edit_booking', booking_id=b.id) }}">✏️ Edit</a>
+
+                <form method="POST"
+                      action="{{ url_for('delete_booking', booking_id=b.id) }}"
+                      onsubmit="return confirm('Are you sure you want to delete this booking?');">
+                  <button class="a-btn danger" type="submit">🗑️ Delete</button>
+                </form>
+              </div>
+            </div>
+
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+      {% else %}
+        <div class="empty">No registered guests yet.</div>
+      {% endif %}
+    </section>
+
+  </div>
 </div>
 
+<script>
+  function parseYMD(s){
+    const [y,m,d] = s.split("-").map(Number);
+    return new Date(y, m-1, d);
+  }
+  function todayYMD(){
+    const t = new Date();
+    const y = t.getFullYear();
+    const m = String(t.getMonth()+1).padStart(2,"0");
+    const d = String(t.getDate()).padStart(2,"0");
+    return `${y}-${m}-${d}`;
+  }
+
+  async function copyText(text){
+    try{ await navigator.clipboard.writeText(text); }
+    catch(e){
+      const tmp = document.createElement("textarea");
+      tmp.value = text; document.body.appendChild(tmp);
+      tmp.select(); document.execCommand("copy");
+      document.body.removeChild(tmp);
+    }
+  }
+
+  const rows = Array.from(document.querySelectorAll(".row"));
+  const today = parseYMD(todayYMD());
+
+  function setStatusAndStats(){
+    let total=0, active=0, upcoming=0, ended=0;
+
+    rows.forEach(r=>{
+      total++;
+      const ci = parseYMD(r.dataset.checkin);
+      const co = parseYMD(r.dataset.checkout);
+
+      let st = "ended";
+      if (today < ci) st = "upcoming";
+      else if (today >= ci && today <= co) st = "active";
+
+      r.dataset.status = st;
+
+      const badge = r.querySelector(".status-badge");
+      if(badge){
+        if(st === "active"){
+          badge.className = "badge b-active status-badge";
+          badge.innerHTML = "<i></i>Active";
+          active++;
+        } else if(st === "upcoming"){
+          badge.className = "badge b-upcoming status-badge";
+          badge.innerHTML = "<i></i>Upcoming";
+          upcoming++;
+        } else {
+          badge.className = "badge b-ended status-badge";
+          badge.innerHTML = "<i></i>Ended";
+          ended++;
+        }
+      }
+    });
+
+    const elT = document.getElementById("statTotal");
+    const elA = document.getElementById("statActive");
+    const elU = document.getElementById("statUpcoming");
+    const elE = document.getElementById("statEnded");
+    if(elT) elT.textContent = total;
+    if(elA) elA.textContent = active;
+    if(elU) elU.textContent = upcoming;
+    if(elE) elE.textContent = ended;
+  }
+
+  setStatusAndStats();
+
+  const q = document.getElementById("q");
+  const statusFilter = document.getElementById("statusFilter");
+
+  function applyFilters(){
+    const term = (q?.value || "").trim().toLowerCase();
+    const st = (statusFilter?.value || "").trim();
+
+    rows.forEach(r=>{
+      const hay = (r.dataset.guest + " " + r.dataset.email + " " + r.dataset.phone);
+      const okTerm = !term || hay.includes(term);
+      const okStatus = !st || r.dataset.status === st;
+      r.style.display = (okTerm && okStatus) ? "" : "none";
+    });
+  }
+
+  if(q) q.addEventListener("input", applyFilters);
+  if(statusFilter) statusFilter.addEventListener("change", applyFilters);
+</script>
 {% endblock %}

@@ -2,168 +2,719 @@
 {% block title %}Register{% endblock %}
 {% block content %}
 <style>
-    body { background-color:#121212; color:#ffffff; font-family:'Arial', sans-serif; }
-    .register-container {
-        max-width: 440px;
-        margin: 70px auto;
-        background-color: #1e1e1e;
-        padding: 35px;
-        border-radius: 18px;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.55);
-        animation: fadeIn 0.5s ease-out;
-    }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0px); } }
-    h2 { text-align: center; margin-bottom: 25px; color: #f5f5f5; font-size: 28px; }
-    label { display:block; margin-bottom:6px; font-weight:bold; color:#e0e0e0; }
-    .input-group { position:relative; margin-bottom:16px; }
-    .input-group input {
-        width:100%; padding:12px 45px 12px 15px;
-        border:none; border-radius:10px;
-        background-color:#2a2a2a; color:#fff;
-        font-size:15px; transition:all .25s ease;
-    }
-    .input-group input:focus { outline:none; background-color:#333; box-shadow:0 0 6px #8a2be2; }
-    .input-group span {
-        position:absolute; right:12px; top:50%;
-        transform:translateY(-50%);
-        color:#c3a6ff; font-size:18px; user-select:none;
-    }
+  :root{
+    --bg:#070708;
+    --glass: rgba(20,20,22,.58);
+    --stroke: rgba(255,215,0,.18);
+    --gold:#ffd700;
+    --gold2:#c9a200;
+    --text:#f2f2f2;
+    --muted:#b9b9b9;
+    --danger:#ff4d4d;
+    --ok:#4dff8b;
+    --vio:#bb86fc;
+    --shadow: 0 26px 70px rgba(0,0,0,.86);
+  }
 
-    .strength-bar { height:6px; border-radius:4px; background-color:#333; margin-bottom:6px; overflow:hidden; }
-    .strength-bar div { height:100%; width:0%; transition:.3s; }
-    .weak { background-color:#ff4b4b; }
-    .medium { background-color:#ffb300; }
-    .strong { background-color:#00e676; }
-    .strength-text { font-size:13px; color:#ccc; margin-bottom:16px; }
+  body{
+    background:
+      radial-gradient(900px 520px at 20% 0%, rgba(255,215,0,.10), transparent 60%),
+      radial-gradient(700px 420px at 80% 15%, rgba(187,134,252,.11), transparent 55%),
+      radial-gradient(circle at top, #171717, #0b0b0c 55%, #070708);
+    color: var(--text);
+    font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    overflow-x:hidden;
+  }
 
-    button {
-        width:100%; padding:13px;
-        border:none; border-radius:10px;
-        background: linear-gradient(135deg, #7b2fff, #5f12d8);
-        color:#fff; font-size:17px; cursor:pointer;
-        transition:.25s ease; font-weight:bold; letter-spacing:.5px; margin-top:10px;
-    }
-    button:hover { background: linear-gradient(135deg, #9155ff, #6b22ff); transform: translateY(-2px); }
+  /* Cinematic grain */
+  .grain{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    opacity:.06;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+  }
 
-    .login-link { text-align:center; margin-top:20px; font-size:15px; color:#c7c7c7; }
-    .login-link a { color:#bb86fc; text-decoration:none; font-weight:bold; }
-    .login-link a:hover { text-decoration:underline; }
+  /* particles */
+  .bg-particles{ position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.55; }
+  .p{
+    position:absolute; width:6px; height:6px; border-radius:999px;
+    background: radial-gradient(circle, rgba(255,215,0,.9), rgba(255,215,0,.05));
+    animation: float 10s ease-in-out infinite;
+    filter: blur(.15px);
+  }
+  .p:nth-child(1){ left:8%; top:18%; animation-duration:10s; transform: scale(.8); }
+  .p:nth-child(2){ left:18%; top:74%; animation-duration:11s; transform: scale(.6); }
+  .p:nth-child(3){ left:62%; top:14%; animation-duration:12s; transform: scale(.7); }
+  .p:nth-child(4){ left:86%; top:60%; animation-duration:13s; transform: scale(.9); }
+  .p:nth-child(5){ left:50%; top:82%; animation-duration:14s; transform: scale(.55); }
+  @keyframes float{
+    0%,100%{ transform: translateY(0) translateX(0); opacity:.55; }
+    50%{ transform: translateY(-18px) translateX(10px); opacity:.9; }
+  }
+
+  /* layout */
+  .wrap{
+    position:relative; z-index:1;
+    min-height: calc(100vh - 160px);
+    display:flex; align-items:center; justify-content:center;
+    padding: 72px 14px;
+  }
+  .shell{
+    width:100%;
+    max-width: 1120px;
+    display:grid;
+    grid-template-columns: 1.08fr .92fr;
+    gap: 22px;
+    align-items: stretch;
+  }
+
+  /* left premium brand panel */
+  .brand{
+    border-radius: 30px;
+    background:
+      linear-gradient(145deg, rgba(255,215,0,.10), rgba(0,0,0,0) 35%),
+      linear-gradient(145deg, #151516, #0e0e10);
+    border: 1px solid rgba(255,215,0,.16);
+    box-shadow: 0 26px 70px rgba(0,0,0,.80);
+    padding: 38px;
+    overflow:hidden;
+    position: relative;
+    animation: inUp 650ms ease both;
+  }
+  .brand::before{
+    content:"";
+    position:absolute;
+    inset:-160px -200px auto auto;
+    width: 560px; height: 560px;
+    background: radial-gradient(circle, rgba(255,215,0,.22), transparent 62%);
+    transform: rotate(15deg);
+    pointer-events:none;
+  }
+  .brand::after{
+    content:"";
+    position:absolute;
+    inset:auto -120px -140px auto;
+    width: 360px; height: 360px;
+    background: radial-gradient(circle, rgba(187,134,252,.16), transparent 62%);
+    pointer-events:none;
+  }
+
+  .brand-top{ display:flex; align-items:center; gap:14px; margin-bottom: 18px; }
+  .logo{
+    width: 80px; height: 80px;
+    border-radius: 22px;
+    background: rgba(0,0,0,.25);
+    border: 1px solid rgba(255,215,0,.22);
+    display:flex; align-items:center; justify-content:center;
+    position:relative; overflow:hidden;
+    animation: pop 900ms ease-out both;
+  }
+  .logo img{ width: 58px; height:auto; }
+  .logo::after{
+    content:"";
+    position:absolute; inset:-44px;
+    background: linear-gradient(120deg, transparent 35%, rgba(255,215,0,.26) 50%, transparent 65%);
+    transform: translateX(-60%) rotate(10deg);
+    animation: shine 2.7s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes shine{
+    0%{ transform: translateX(-75%) rotate(10deg); opacity:.22; }
+    35%{ opacity:.92; }
+    100%{ transform: translateX(75%) rotate(10deg); opacity:.22; }
+  }
+  @keyframes pop{
+    0%{ transform: scale(.75); opacity:0; }
+    70%{ transform: scale(1.06); opacity:1; }
+    100%{ transform: scale(1); }
+  }
+
+  .brand-title h1{
+    margin:0;
+    font-size: 22px;
+    letter-spacing: 1.2px;
+    color: var(--gold);
+  }
+  .brand-title p{
+    margin:6px 0 0 0;
+    color: var(--muted);
+    font-size: 13.5px;
+    line-height: 1.45;
+  }
+
+  .features{ margin-top: 18px; display:grid; gap: 10px; }
+  .feat{
+    display:flex; gap:10px; align-items:flex-start;
+    padding: 14px 14px;
+    border-radius: 18px;
+    background: rgba(255,255,255,.03);
+    border: 1px solid rgba(255,215,0,.10);
+  }
+  .dot{
+    width: 10px; height: 10px;
+    border-radius: 999px;
+    margin-top: 4px;
+    background: radial-gradient(circle, rgba(255,215,0,1), rgba(255,215,0,.15));
+    box-shadow: 0 0 18px rgba(255,215,0,.28);
+    flex: 0 0 auto;
+  }
+  .feat b{ color:#f7f2d3; font-weight: 900; display:block; margin-bottom: 2px; }
+  .feat span{ color:#cfcfcf; font-size: 13px; line-height: 1.45; }
+
+  /* RIGHT: ultra premium frame */
+  .frame{
+    border-radius: 30px;
+    padding: 1px;
+    background:
+      linear-gradient(135deg, rgba(255,215,0,.38), rgba(187,134,252,.24), rgba(255,255,255,.10));
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow:hidden;
+    animation: inUp 780ms ease both;
+    transform-style: preserve-3d;
+  }
+  .frame::before{
+    content:"";
+    position:absolute;
+    inset:-80px;
+    background: conic-gradient(from 180deg,
+      rgba(255,215,0,.0),
+      rgba(255,215,0,.35),
+      rgba(187,134,252,.28),
+      rgba(255,255,255,.12),
+      rgba(255,215,0,.0)
+    );
+    filter: blur(26px);
+    opacity:.55;
+    animation: orbit 7.5s linear infinite;
+    pointer-events:none;
+  }
+  @keyframes orbit{ to{ transform: rotate(360deg); } }
+
+  .card{
+    border-radius: 30px;
+    background: var(--glass);
+    border: 1px solid rgba(255,255,255,.06);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 36px 30px;
+    position: relative;
+    overflow:hidden;
+  }
+  .card::after{
+    content:"";
+    position:absolute;
+    inset:-60px -140px auto auto;
+    width: 360px; height: 360px;
+    background: linear-gradient(120deg, transparent 35%, rgba(255,215,0,.10) 50%, transparent 65%);
+    transform: translateX(-30%) rotate(12deg);
+    opacity:.55;
+    animation: sweep 3.8s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes sweep{
+    0%{ transform: translateX(-40%) rotate(12deg); opacity:.25; }
+    45%{ opacity:.85; }
+    100%{ transform: translateX(40%) rotate(12deg); opacity:.25; }
+  }
+
+  .head{ margin-bottom: 14px; position:relative; z-index:1; }
+  .head h2{ margin:0; font-size: 22px; letter-spacing:.6px; color:#fff; }
+  .head p{ margin:8px 0 0; color: var(--muted); font-size: 13.5px; }
+
+  /* flash */
+  .flash{
+    position:relative; z-index:1;
+    padding: 12px;
+    margin: 14px 0 14px;
+    border-radius: 14px;
+    font-size: 14px;
+    text-align:center;
+    border-left: 4px solid transparent;
+    background: rgba(255,255,255,.04);
+  }
+  .flash.success{ border-left-color: var(--ok); color:#d8ffe5; background: rgba(30,95,43,.35); }
+  .flash.error{ border-left-color: var(--danger); color:#ffd0d0; background: rgba(59,29,29,.55); }
+  .flash.info{ border-left-color: var(--vio); color:#e5d4ff; background: rgba(43,29,59,.55); }
+
+  /* form grid */
+  .grid{
+    position:relative; z-index:1;
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  /* floating label fields */
+  .field{ margin-top: 12px; position:relative; z-index:1; }
+  .control{
+    position: relative;
+    border-radius: 18px;
+    background: rgba(0,0,0,.25);
+    border: 1px solid rgba(255,255,255,.10);
+    transition: .22s;
+  }
+  .control:focus-within{
+    border-color: rgba(255,215,0,.55);
+    box-shadow: 0 0 0 4px rgba(255,215,0,.10);
+    background: rgba(0,0,0,.34);
+  }
+  .control input{
+    width:100%;
+    padding: 18px 46px 10px 14px;
+    border: none;
+    background: transparent;
+    color:#fff;
+    font-size: 15px;
+    outline:none;
+    border-radius: 18px;
+  }
+  .control label{
+    position:absolute;
+    left: 14px;
+    top: 13px;
+    font-size: 13px;
+    font-weight: 900;
+    color: rgba(255,255,255,.70);
+    pointer-events:none;
+    transition: .18s;
+  }
+  .control input:focus + label,
+  .control input:not(:placeholder-shown) + label{
+    top: 7px;
+    font-size: 11px;
+    color: rgba(255,215,0,.92);
+    letter-spacing: .25px;
+  }
+
+  .icon{
+    position:absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px; height: 34px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,215,0,.18);
+    background: rgba(255,215,0,.08);
+    color: var(--gold);
+    display:flex; align-items:center; justify-content:center;
+    user-select:none;
+  }
+
+  .icon-btn{
+    cursor:pointer;
+    transition:.22s;
+  }
+  .icon-btn:hover{
+    background: rgba(255,215,0,.14);
+    transform: translateY(-50%) translateY(-1px);
+  }
+
+  /* helper row under passwords */
+  .helper{
+    position:relative; z-index:1;
+    margin-top: 8px;
+    display:flex;
+    justify-content:space-between;
+    gap: 12px;
+    font-size: 12.5px;
+    color: rgba(255,255,255,.65);
+  }
+  .match{
+    font-weight: 900;
+    display:none;
+  }
+  .match.ok{ display:inline; color: rgba(77,255,139,.92); }
+  .match.bad{ display:inline; color: rgba(255,77,77,.92); }
+
+  /* strength */
+  .strength{
+    position:relative; z-index:1;
+    margin-top: 12px;
+  }
+  .strength-bar{
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.08);
+    overflow:hidden;
+    border: 1px solid rgba(255,255,255,.08);
+  }
+  .strength-fill{
+    height:100%;
+    width:0%;
+    transition: .25s;
+    background: linear-gradient(135deg, rgba(255,77,77,.95), rgba(255,215,0,.95));
+  }
+  .strength-text{
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 13px;
+    display:flex;
+    justify-content:space-between;
+    gap: 10px;
+  }
+  .strength-text b{ color: rgba(255,255,255,.80); font-weight: 900; }
+
+  /* button + loading */
+  .btn{
+    position:relative; z-index:1;
+    width: 100%;
+    margin-top: 16px;
+    padding: 14px;
+    border: none;
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: #151515;
+    font-size: 16px;
+    font-weight: 950;
+    cursor:pointer;
+    letter-spacing: .7px;
+    transition:.25s;
+    box-shadow: 0 12px 30px rgba(255,215,0,.20);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap: 10px;
+  }
+  .btn:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 18px 42px rgba(255,215,0,.28);
+    background: linear-gradient(135deg, #ffe44d, #d4b200);
+  }
+  .btn:disabled{
+    opacity:.82;
+    cursor:not-allowed;
+    transform:none;
+  }
+  .spinner{
+    width: 16px; height: 16px;
+    border-radius: 999px;
+    border: 2px solid rgba(21,21,21,.25);
+    border-top-color: rgba(21,21,21,.85);
+    display:none;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+
+  .divider{
+    position:relative; z-index:1;
+    display:flex; align-items:center; gap:10px;
+    margin: 16px 0 10px;
+    color: rgba(255,255,255,.55);
+    font-size: 12.5px;
+  }
+  .divider::before, .divider::after{
+    content:"";
+    height:1px;
+    flex:1;
+    background: rgba(255,255,255,.08);
+  }
+
+  .bottom{
+    position:relative; z-index:1;
+    margin-top: 10px;
+    text-align:center;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .bottom a{
+    color: var(--gold);
+    text-decoration:none;
+    font-weight: 900;
+  }
+  .bottom a:hover{ text-decoration: underline; }
+
+  @keyframes inUp{
+    from{ opacity:0; transform: translateY(16px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+
+  @media(max-width: 980px){
+    .shell{ grid-template-columns: 1fr; max-width: 640px; }
+    .brand{ display:none; }
+    .wrap{ padding: 60px 14px; }
+    .grid{ grid-template-columns: 1fr; }
+  }
 </style>
 
-<div class="register-container">
-    <h2>Create Account</h2>
+<div class="grain" aria-hidden="true"></div>
+<div class="bg-particles" aria-hidden="true">
+  <span class="p"></span><span class="p"></span><span class="p"></span><span class="p"></span><span class="p"></span>
+</div>
 
-    <!-- ✅ Flash messages (use base.html styling: flash success/error/info) -->
-    {% with messages = get_flashed_messages(with_categories=True) %}
-        {% if messages %}
+<div class="wrap">
+  <div class="shell">
+
+    <!-- LEFT -->
+    <section class="brand">
+      <div class="brand-top">
+        <div class="logo">
+          <img src="{{ url_for('static', filename='images/logo.png') }}" alt="HOTEL BUFF">
+        </div>
+        <div class="brand-title">
+          <h1>HOTEL BUFF</h1>
+          <p>Create your premium account to manage bookings and access hotel services securely.</p>
+        </div>
+      </div>
+
+      <div class="features">
+        <div class="feat"><span class="dot"></span><div><b>Premium Identity</b><span>Black & gold suite style across the whole system.</span></div></div>
+        <div class="feat"><span class="dot"></span><div><b>Strong Security</b><span>Validated inputs + secure password handling.</span></div></div>
+        <div class="feat"><span class="dot"></span><div><b>Fast Registration</b><span>Register in seconds and login immediately.</span></div></div>
+      </div>
+    </section>
+
+    <!-- RIGHT -->
+    <section class="frame" id="tiltFrame">
+      <div class="card">
+        <div class="head">
+          <h2>Create account</h2>
+          <p>Fill in your details. You can sign in right after registration.</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=True) %}
+          {% if messages %}
             {% for category, msg in messages %}
-                <div class="flash {{ category }}">{{ msg }}</div>
+              <div class="flash {{ category }}">{{ msg }}</div>
             {% endfor %}
-        {% endif %}
-    {% endwith %}
+          {% endif %}
+        {% endwith %}
 
-    <form method="POST" id="registerForm">
-        <label>First Name</label>
-        <div class="input-group">
-            <input type="text" name="first_name" placeholder="Enter first name" required>
-            <span>🧑</span>
-        </div>
+        <form method="POST" id="registerForm" autocomplete="on">
 
-        <label>Last Name</label>
-        <div class="input-group">
-            <input type="text" name="last_name" placeholder="Enter last name" required>
-            <span>🧑</span>
-        </div>
+          <div class="grid">
+            <div class="field">
+              <div class="control">
+                <input id="first_name" type="text" name="first_name" required placeholder=" " />
+                <label for="first_name">First Name</label>
+                <div class="icon">🧑</div>
+              </div>
+            </div>
 
-        <label>Username</label>
-        <div class="input-group">
-            <input type="text" name="username" pattern="[A-Za-z]+" placeholder="Enter username" required>
-            <span>👤</span>
-        </div>
+            <div class="field">
+              <div class="control">
+                <input id="last_name" type="text" name="last_name" required placeholder=" " />
+                <label for="last_name">Last Name</label>
+                <div class="icon">🧑</div>
+              </div>
+            </div>
+          </div>
 
-        <label>Email</label>
-        <div class="input-group">
-            <input type="email" name="email" placeholder="example@mail.com" required>
-            <span>📧</span>
-        </div>
+          <div class="grid">
+            <div class="field">
+              <div class="control">
+                <input id="username" type="text" name="username" pattern="[A-Za-z]+" required placeholder=" " />
+                <label for="username">Username (letters only)</label>
+                <div class="icon">👤</div>
+              </div>
+            </div>
 
-        <label>Phone Number</label>
-        <div class="input-group">
-            <input type="tel" name="phone" placeholder="+389..." required>
-            <span>📞</span>
-        </div>
+            <div class="field">
+              <div class="control">
+                <input id="email" type="email" name="email" required placeholder=" " />
+                <label for="email">Email</label>
+                <div class="icon">📧</div>
+              </div>
+            </div>
+          </div>
 
-        <label>Password</label>
-        <div class="input-group">
-            <input type="password" id="password" name="password" required>
-            <span onclick="togglePassword('password')" style="cursor:pointer;">👁️</span>
-        </div>
+          <div class="field">
+            <div class="control">
+              <input id="phone" type="tel" name="phone" required placeholder=" " />
+              <label for="phone">Phone Number</label>
+              <div class="icon">📞</div>
+            </div>
+          </div>
 
-        <label>Confirm Password</label>
-        <div class="input-group">
-            <input type="password" id="confirm_password" name="confirm_password" required>
-            <span onclick="togglePassword('confirm_password')" style="cursor:pointer;">👁️</span>
-        </div>
+          <div class="grid">
+            <div class="field">
+              <div class="control">
+                <input id="password" type="password" name="password" required placeholder=" " />
+                <label for="password">Password</label>
+                <div class="icon icon-btn" id="togglePwd" title="Show/Hide">👁️</div>
+              </div>
+            </div>
 
-        <div class="strength-bar">
-            <div id="strengthBar"></div>
-        </div>
-        <div class="strength-text" id="strengthText">Password strength</div>
+            <div class="field">
+              <div class="control">
+                <input id="confirm_password" type="password" name="confirm_password" required placeholder=" " />
+                <label for="confirm_password">Confirm Password</label>
+                <div class="icon icon-btn" id="toggleConfirm" title="Show/Hide">👁️</div>
+              </div>
 
-        <button type="submit">Register</button>
-    </form>
+              <div class="helper">
+                <span>Passwords</span>
+                <span class="match" id="matchText">—</span>
+              </div>
+            </div>
+          </div>
 
-    <div class="login-link">
-        Already have an account? <a href="{{ url_for('login') }}">Login</a>
-    </div>
+          <div class="strength">
+            <div class="strength-bar">
+              <div class="strength-fill" id="strengthFill"></div>
+            </div>
+            <div class="strength-text">
+              <span id="strengthLabel">Password strength</span>
+              <b id="strengthLevel">—</b>
+            </div>
+          </div>
+
+          <button class="btn" type="submit" id="regBtn">
+            <span class="spinner" id="spinner"></span>
+            <span id="btnText">REGISTER</span>
+          </button>
+
+          <div class="divider">HOTEL BUFF</div>
+
+          <div class="bottom">
+            Already have an account? <a href="{{ url_for('login') }}">Login</a><br>
+            HOTEL BUFF © 2025 · Black & Gold Edition
+          </div>
+        </form>
+      </div>
+    </section>
+
+  </div>
 </div>
 
 <script>
-    function togglePassword(id) {
-        const el = document.getElementById(id);
-        el.type = el.type === "password" ? "text" : "password";
+  (function(){
+    const frame = document.getElementById("tiltFrame");
+    const pwd = document.getElementById("password");
+    const conf = document.getElementById("confirm_password");
+    const matchText = document.getElementById("matchText");
+
+    const strengthFill = document.getElementById("strengthFill");
+    const strengthLabel = document.getElementById("strengthLabel");
+    const strengthLevel = document.getElementById("strengthLevel");
+
+    const togglePwd = document.getElementById("togglePwd");
+    const toggleConfirm = document.getElementById("toggleConfirm");
+
+    const form = document.getElementById("registerForm");
+    const btn = document.getElementById("regBtn");
+    const spinner = document.getElementById("spinner");
+    const btnText = document.getElementById("btnText");
+
+    // Tilt (desktop only)
+    if(frame && window.matchMedia("(min-width: 981px)").matches){
+      frame.addEventListener("mousemove", (e) => {
+        const r = frame.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width - 0.5;
+        const y = (e.clientY - r.top) / r.height - 0.5;
+        const rx = (-y * 4).toFixed(2);
+        const ry = (x * 6).toFixed(2);
+        frame.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
+      });
+      frame.addEventListener("mouseleave", () => {
+        frame.style.transform = "rotateX(0deg) rotateY(0deg)";
+      });
     }
 
-    function checkStrength(password) {
-        const bar = document.getElementById("strengthBar");
-        const text = document.getElementById("strengthText");
+    // Show/hide toggles
+    const toggle = (input, el) => {
+      if(!input || !el) return;
+      const isPwd = input.type === "password";
+      input.type = isPwd ? "text" : "password";
+      el.textContent = isPwd ? "🙈" : "👁️";
+    };
+    if(togglePwd) togglePwd.addEventListener("click", () => toggle(pwd, togglePwd));
+    if(toggleConfirm) toggleConfirm.addEventListener("click", () => toggle(conf, toggleConfirm));
 
-        let strength = 0;
-        if (password.length >= 8) strength++;
-        if (/[A-Z]/.test(password)) strength++;
-        if (/[0-9]/.test(password)) strength++;
-        if (/[^A-Za-z0-9]/.test(password)) strength++;
+    // Strength scoring
+    const score = (v) => {
+      let s = 0;
+      if(v.length >= 8) s++;
+      if(v.length >= 12) s++;
+      if(/[A-Z]/.test(v)) s++;
+      if(/[0-9]/.test(v)) s++;
+      if(/[^A-Za-z0-9]/.test(v)) s++;
+      return s; // 0..5
+    };
 
-        bar.className = "";
-        bar.style.width = "0%";
+    const updateStrength = () => {
+      if(!pwd || !strengthFill || !strengthLabel || !strengthLevel) return;
+      const v = pwd.value || "";
+      const s = score(v);
+      const pct = Math.min(100, (s/5)*100);
+      strengthFill.style.width = pct + "%";
 
-        if (strength <= 1) {
-            bar.style.width = "33%";
-            bar.classList.add("weak");
-            text.textContent = "Weak password";
-        } else if (strength <= 3) {
-            bar.style.width = "66%";
-            bar.classList.add("medium");
-            text.textContent = "Medium strength";
-        } else {
-            bar.style.width = "100%";
-            bar.classList.add("strong");
-            text.textContent = "Strong password";
-        }
+      if(v.length === 0){
+        strengthLabel.textContent = "Password strength";
+        strengthLevel.textContent = "—";
+        return;
+      }
+
+      if(s <= 1){
+        strengthLabel.textContent = "Weak (add length + numbers)";
+        strengthLevel.textContent = "Weak";
+      } else if(s === 2){
+        strengthLabel.textContent = "Fair (add uppercase/symbol)";
+        strengthLevel.textContent = "Fair";
+      } else if(s === 3){
+        strengthLabel.textContent = "Good (almost there)";
+        strengthLevel.textContent = "Good";
+      } else if(s === 4){
+        strengthLabel.textContent = "Strong (recommended)";
+        strengthLevel.textContent = "Strong";
+      } else {
+        strengthLabel.textContent = "Elite (excellent)";
+        strengthLevel.textContent = "Elite";
+      }
+    };
+
+    // Match status
+    const updateMatch = () => {
+      if(!pwd || !conf || !matchText) return;
+      const a = pwd.value || "";
+      const b = conf.value || "";
+
+      if(a.length === 0 && b.length === 0){
+        matchText.className = "match";
+        matchText.textContent = "—";
+        return;
+      }
+      if(b.length === 0){
+        matchText.className = "match";
+        matchText.textContent = "typing…";
+        return;
+      }
+
+      const ok = a === b;
+      matchText.className = "match " + (ok ? "ok" : "bad");
+      matchText.textContent = ok ? "Match ✅" : "No match ❌";
+    };
+
+    if(pwd){
+      pwd.addEventListener("input", () => { updateStrength(); updateMatch(); });
+    }
+    if(conf){
+      conf.addEventListener("input", updateMatch);
     }
 
-    document.getElementById("password").addEventListener("input", function () {
-        checkStrength(this.value);
-    });
-
-    document.getElementById("registerForm").addEventListener("submit", function(e) {
-        const p1 = document.getElementById("password").value;
-        const p2 = document.getElementById("confirm_password").value;
-
-        if (p1 !== p2) {
-            alert("❌ Passwords do not match!");
-            e.preventDefault();
+    // Submit: prevent mismatch + loading state
+    if(form && btn && spinner && btnText){
+      form.addEventListener("submit", (e) => {
+        const a = (pwd && pwd.value) ? pwd.value : "";
+        const b = (conf && conf.value) ? conf.value : "";
+        if(a !== b){
+          e.preventDefault();
+          alert("❌ Passwords do not match!");
+          return;
         }
-    });
+        btn.disabled = true;
+        spinner.style.display = "inline-block";
+        btnText.textContent = "Creating…";
+      });
+    }
+
+    // Init
+    updateStrength();
+    updateMatch();
+  })();
 </script>
 {% endblock %}

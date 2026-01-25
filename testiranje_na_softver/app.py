@@ -76,13 +76,17 @@ def login():
         ).fetchone()
         conn.close()
 
-        if user and check_password_hash(user["password_hash"], password):
-            session["user"] = user["username"]
-            session["role"] = user["role"]  # ✅ store role
-            return redirect(url_for("home"))
+        # ❌ Погрешно корисничко име или лозинка
+        if not user or not check_password_hash(user["password_hash"], password):
+            flash("❌ Invalid username or password.", "error")
+            return redirect(url_for("login"))
 
-        return "Invalid credentials!"
-    
+        # ✅ Успешна најава
+        session["user"] = user["username"]
+        session["role"] = user["role"]
+        flash(f"✅ Welcome back, {user['username']}!", "success")
+        return redirect(url_for("home"))
+
     return render_template("login.html")
 
 # -------------------
