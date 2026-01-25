@@ -211,30 +211,87 @@ def register():
 def admin_panel():
     if "user" not in session or session.get("role") != "admin":
         return redirect(url_for("login"))
-    message = ""
+
     if request.method == "POST":
-        first_name = request.form["first_name"]
-        last_name = request.form["last_name"]
-        passport = request.form["passport"]
-        check_in = request.form["check_in"]
-        check_out = request.form["check_out"]
+        first_name = request.form.get("first_name", "").strip()
+        last_name  = request.form.get("last_name", "").strip()
+        email      = request.form.get("email", "").strip()
+        phone      = request.form.get("phone", "").strip()
+        check_in   = request.form.get("check_in", "").strip()   # from admin.html
+        check_out  = request.form.get("check_out", "").strip()  # from admin.html
+
+        # validations
+        if not all([first_name, last_name, email, phone, check_in, check_out]):
+            flash("❌ Please fill all fields.", "error")
+            return redirect(url_for("admin_panel"))
 
         if not first_name.isalpha() or not last_name.isalpha():
-            message = "First name and last name must contain only letters."
-        else:
-            guests.append({
-                "first_name": first_name,
-                "last_name": last_name,
-                "passport": passport,
-                "check_in": check_in,
-                "check_out": check_out
-            })
-            message = f"Guest {first_name} {last_name} registered successfully."
+            flash("❌ First name and last name must contain only letters.", "error")
+            return redirect(url_for("admin_panel"))
 
-    today_str = datetime.now().strftime("%Y-%m-%d")
-    current_guests = [g for g in guests if g["check_in"] <= today_str <= g["check_out"]]
+        try:
+            created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    return render_template("admin.html", message=message, guests=guests, current_guests=current_guests)
+            conn = get_db_connection()
+            conn.execute("""
+                INSERT INTO bookings
+                (first_name, last_name, email, phone, checkin_date, checkout_date, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (first_name, last_name, email, phone, check_in, check_out, created_at))
+            conn.commit()
+            conn.close()
+
+            flash(f"✅ Guest {first_name} {last_name} registered successfully.", "success")
+
+            # ✅ ОДИ ДИРЕКТ НА /admin/bookings
+            return redirect(url_for("admin_bookings"))
+
+        except Exception as e:
+            try:
+                conn.close()
+            except:
+                pass
+            print("ADMIN INSERT ERROR:", e)
+            flash("❌ Error saving booking to database.", "error")
+            return redirect(url_for("admin_panel"))
+
+    # GET: прикажи dashboard статистики преку база (не RAM листа)
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    conn = get_db_connection()
+    guests_rows = conn.execute("SELECT * FROM bookings ORDER BY created_at DESC").fetchall()
+    current_rows = conn.execute("""
+        SELECT * FROM bookings
+        WHERE checkin_date <= ? AND checkout_date >= ?
+        ORDER BY created_at DESC
+    """, (today, today)).fetchall()
+    conn.close()
+
+    # admin.html очекува keys: first_name, last_name, email, phone, check_in, check_out
+    guests = []
+    for r in guests_rows:
+        guests.append({
+            "first_name": r["first_name"],
+            "last_name": r["last_name"],
+            "email": r["email"],
+            "phone": r["phone"],
+            "check_in": r["checkin_date"],
+            "check_out": r["checkout_date"],
+        })
+
+    current_guests = []
+    for r in current_rows:
+        current_guests.append({
+            "first_name": r["first_name"],
+            "last_name": r["last_name"],
+            "email": r["email"],
+            "phone": r["phone"],
+            "check_in": r["checkin_date"],
+            "check_out": r["checkout_date"],
+        })
+
+    return render_template("admin.html", message="", guests=guests, current_guests=current_guests)
+
 
 @app.route("/logout")
 def logout():
