@@ -226,6 +226,42 @@
   .head h2{ margin:0; font-size: 22px; letter-spacing:.6px; color:#fff; }
   .head p{ margin:8px 0 0; color: var(--muted); font-size: 13.5px; line-height:1.45; }
 
+/* Back button (top inside card) */
+.btn-back-top{
+  position:relative;
+  margin-bottom: 14px;
+  display:inline-flex;
+  align-items:center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,215,0,.20);
+  background: rgba(255,255,255,.04);
+  color: var(--gold);
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: .4px;
+  text-decoration:none;
+  transition:.25s;
+}
+
+.btn-back-top:hover{
+  transform: translateX(-4px);
+  background: rgba(255,215,0,.08);
+  box-shadow: 0 10px 26px rgba(0,0,0,.35);
+}
+
+.btn-back-top .arr{
+  width: 26px; height: 26px;
+  border-radius: 10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border: 1px solid rgba(255,215,0,.28);
+  background: rgba(255,215,0,.10);
+  color: var(--gold);
+}
+
   /* flash */
   .flash{
     position:relative; z-index:1;
@@ -463,6 +499,12 @@
           <h2>Проверка на сместување</h2>
           <p>Внесете го email-от што го користевте при резервацијата.</p>
         </div>
+
+        <!-- BACK BUTTON -->
+  <a class="btn-back-top" href="{{ url_for('home') }}">
+  <span class="arr">←</span>
+  <span>Назад код админ панел</span>
+  </a>
 
         {% with messages = get_flashed_messages(with_categories=True) %}
           {% if messages %}
