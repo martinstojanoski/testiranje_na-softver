@@ -746,6 +746,163 @@ def delete_user(user_id):
     return redirect(url_for("admin_users"))
 
 
+# -------------------
+# availability
+# -------------------
+import sqlite3
+from datetime import datetime, date
+from flask import request, render_template, session
+
+TOTAL_ROOMS = 30  # смени си
+
+def _pick_date_columns(conn, table_name="bookings"):
+    cols = conn.execute(f"PRAGMA table_info({table_name})").fetchall()
+    names = [c["name"] for c in cols]
+
+    candidates = [
+        ("check_in", "check_out"),
+        ("checkin", "checkout"),
+        ("check_in_date", "check_out_date"),
+        ("checkin_date", "checkout_date"),
+        ("date_from", "date_to"),
+        ("start_date", "end_date"),
+    ]
+
+    for a, b in candidates:
+        if a in names and b in names:
+            return a, b
+
+    raise sqlite3.OperationalError(
+        f"Could not find date columns in table '{table_name}'. Found columns: {names}"
+    )
+
+@app.route("/availability", methods=["GET"])
+def availability():
+    check_in = (request.args.get("check_in") or "").strip()
+    check_out = (request.args.get("check_out") or "").strip()
+
+    availability_data = None
+    availability_error = None
+    admin_insights = None
+
+    # validate dates
+    try:
+        ci = datetime.strptime(check_in, "%Y-%m-%d").date()
+        co = datetime.strptime(check_out, "%Y-%m-%d").date()
+        if co <= ci:
+            raise ValueError("Check-out must be after check-in.")
+    except Exception:
+        availability_error = "Invalid dates. Please select a valid check-in and check-out."
+        return render_template(
+            "home.html",
+            user=session.get("username"),
+            availability=availability_data,
+            availability_error=availability_error,
+            admin_insights=admin_insights
+        )
+
+    try:
+        conn = get_db_connection()
+
+        table = "bookings"  # ако кај тебе е друго (пример 'guests'), смени тука
+        col_in, col_out = _pick_date_columns(conn, table)
+
+        q = f"""
+            SELECT COUNT(*) AS occupied
+            FROM {table}
+            WHERE date({col_in}) < date(?)
+              AND date({col_out}) > date(?)
+        """
+        row = conn.execute(q, (check_out, check_in)).fetchone()
+        occupied = int(row["occupied"]) if row and row["occupied"] is not None else 0
+
+        available = max(0, TOTAL_ROOMS - occupied)
+        occupancy = round((occupied / TOTAL_ROOMS) * 100, 1) if TOTAL_ROOMS > 0 else 0.0
+
+        availability_data = {
+            "available": available,
+            "occupied": occupied,
+            "occupancy": occupancy
+        }
+
+        # admin insights (optional)
+        if session.get("role") == "admin":
+            today = date.today().strftime("%Y-%m-%d")
+
+            checkins = conn.execute(
+                f"SELECT COUNT(*) c FROM {table} WHERE date({col_in})=date(?)",
+                (today,)
+            ).fetchone()["c"]
+
+            checkouts = conn.execute(
+                f"SELECT COUNT(*) c FROM {table} WHERE date({col_out})=date(?)",
+                (today,)
+            ).fetchone()["c"]
+
+            active = conn.execute(
+                f"""
+                SELECT COUNT(*) c
+                FROM {table}
+                WHERE date({col_in}) <= date(?)
+                  AND date({col_out}) > date(?)
+                """,
+                (today, today)
+            ).fetchone()["c"]
+
+            admin_insights = {
+                "checkins": int(checkins),
+                "checkouts": int(checkouts),
+                "active": int(active),
+                "conflicts": 0
+            }
+
+        conn.close()
+
+    except sqlite3.OperationalError as e:
+        availability_error = f"Database error: {e}"
+    except Exception as e:
+        availability_error = f"Unexpected error: {e}"
+
+    return render_template(
+        "home.html",
+        user=session.get("username"),
+        availability=availability_data,
+        availability_error=availability_error,
+        admin_insights=admin_insights
+    )
+
+
+
+
+# -------------------
+# aalerts
+# -------------------
+@app.route("/")
+def home():
+    user = session.get("user")  # или "username" кај тебе
+
+    alerts = {
+        "checkins": 0,
+        "checkouts": 0,
+        "pending": 0,
+        "messages": 0,
+        "conflicts": 0,
+        "occupancy": 0,
+    }
+
+    # ако сакаш подоцна ќе ги земеш од база
+    return render_template("home.html", user=user, alerts=alerts)
+
+
+
+
+
+
+
+
+
+
+
 
 
 if __name__ == "__main__":

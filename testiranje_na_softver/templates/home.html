@@ -1,23 +1,31 @@
 {% extends "base.html" %}
 {% block title %}HOTEL BUFF | Home{% endblock %}
+{% set alerts = alerts | default({}) %}
 
 {% block content %}
 <style>
   :root{
-    --bg:#070708;
-    --glass: rgba(20,20,22,.56);
-    --glass2: rgba(20,20,22,.42);
+
+    --bg0:#050506;
+    --bg1:#070708;
+    --glass: rgba(18,18,20,.58);
+    --glass2: rgba(18,18,20,.42);
     --stroke: rgba(255,215,0,.18);
     --stroke2: rgba(255,255,255,.10);
     --gold:#ffd700;
     --gold2:#c9a200;
+    --platinum:#e9e9ee;
     --text:#f2f2f2;
     --muted:#b9b9b9;
+    --muted2:#9a9aa3;
     --ok:#4dff8b;
     --danger:#ff4d4d;
     --vio:#bb86fc;
     --shadow: 0 26px 70px rgba(0,0,0,.86);
     --shadow2: 0 18px 45px rgba(0,0,0,.70);
+    --radius-xl: 34px;
+    --radius-lg: 26px;
+    --radius-md: 18px;
   }
 
   body{
@@ -30,16 +38,31 @@
     overflow-x:hidden;
   }
 
-  /* cinematic grain */
+  /* --- Luxury ambient layers --- */
   .grain{
     position:fixed; inset:0; z-index:0; pointer-events:none;
-    opacity:.06;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+    opacity:.055;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
     mix-blend-mode: overlay;
   }
 
-  /* particles */
-  .bg-particles{ position: fixed; inset:0; pointer-events:none; z-index:0; opacity:.55; }
+  .aurora{
+    position:fixed; inset:-20% -20%; z-index:0; pointer-events:none;
+    opacity:.55;
+    filter: blur(32px) saturate(120%);
+    background:
+      radial-gradient(900px 700px at 15% 10%, rgba(255,215,0,.16), transparent 60%),
+      radial-gradient(800px 620px at 85% 20%, rgba(187,134,252,.18), transparent 58%),
+      radial-gradient(740px 520px at 55% 85%, rgba(255,255,255,.05), transparent 62%);
+    animation: auroraMove 10.5s ease-in-out infinite;
+  }
+  @keyframes auroraMove{
+    0%,100%{ transform: translate3d(0,0,0) scale(1); }
+    50%{ transform: translate3d(1.6%, -1.2%, 0) scale(1.02); }
+  }
+
+  /* subtle particles */
+  .bg-particles{ position: fixed; inset:0; pointer-events:none; z-index:0; opacity:.52; }
   .p{
     position:absolute; width:6px; height:6px; border-radius:999px;
     background: radial-gradient(circle, rgba(255,215,0,.9), rgba(255,215,0,.05));
@@ -58,30 +81,30 @@
 
   .page{
     position: relative; z-index:1;
-    max-width: 1200px;
+    max-width: 1220px;
     margin: 0 auto;
-    padding: 40px 14px 76px;
+    padding: 44px 14px 86px;
   }
 
-  /* topbar */
+  /* --- Topbar refined --- */
   .topbar{
     display:flex; align-items:center; justify-content:space-between; gap:12px;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
   }
-  .crumb{
+  .pill{
     display:inline-flex; align-items:center; gap:10px;
     padding:10px 12px;
     border-radius:999px;
     border: 1px solid rgba(255,215,0,.16);
-    background: rgba(0,0,0,.20);
+    background: rgba(0,0,0,.22);
     color:#eaeaea;
     font-size: 13px;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
   }
-  .crumb b{ color: var(--gold); }
+  .pill b{ color: var(--gold); }
 
-  /* flash */
+  /* --- Flash --- */
   .flash{
     padding: 12px;
     margin: 0 0 14px;
@@ -95,19 +118,20 @@
   .flash.error{ border-left-color: var(--danger); color:#ffd0d0; background: rgba(59,29,29,.55); }
   .flash.info{ border-left-color: var(--vio); color:#e5d4ff; background: rgba(43,29,59,.55); }
 
-  /* hero layout */
+  /* --- Layout --- */
   .hero{
     display:grid;
-    grid-template-columns: 1.35fr .65fr;
+    grid-template-columns: 1.38fr .62fr;
     gap: 16px;
     align-items: stretch;
   }
 
-  /* Ultra frame wrapper like Login/Register */
+  /* --- Premium frame (more “jewelry”) --- */
   .frame{
-    border-radius: 30px;
+    border-radius: var(--radius-xl);
     padding: 1px;
-    background: linear-gradient(135deg, rgba(255,215,0,.38), rgba(187,134,252,.24), rgba(255,255,255,.10));
+    background:
+      linear-gradient(135deg, rgba(255,215,0,.40), rgba(187,134,252,.22), rgba(255,255,255,.10));
     box-shadow: var(--shadow);
     position: relative;
     overflow:hidden;
@@ -117,23 +141,23 @@
   .frame::before{
     content:"";
     position:absolute;
-    inset:-90px;
-    background: conic-gradient(from 180deg,
+    inset:-120px;
+    background: conic-gradient(from 200deg,
       rgba(255,215,0,.0),
       rgba(255,215,0,.35),
       rgba(187,134,252,.28),
       rgba(255,255,255,.12),
       rgba(255,215,0,.0)
     );
-    filter: blur(26px);
+    filter: blur(28px);
     opacity:.55;
-    animation: orbit 7.6s linear infinite;
+    animation: orbit 7.8s linear infinite;
     pointer-events:none;
   }
   @keyframes orbit{ to{ transform: rotate(360deg); } }
 
   .hero-card{
-    border-radius: 30px;
+    border-radius: var(--radius-xl);
     background: var(--glass);
     border: 1px solid rgba(255,255,255,.06);
     backdrop-filter: blur(12px);
@@ -143,36 +167,73 @@
     overflow:hidden;
   }
 
-  /* hero cover image panel */
+  /* --- Hero “signature” highlight line --- */
+  .spec{
+    position:absolute;
+    inset: 0;
+    pointer-events:none;
+    background:
+      radial-gradient(1200px 320px at 25% 0%, rgba(255,215,0,.08), transparent 55%),
+      radial-gradient(900px 260px at 80% 10%, rgba(187,134,252,.08), transparent 58%);
+    opacity:.75;
+  }
+  .hero-card::after{
+    content:"";
+    position:absolute;
+    left:-30%;
+    top: 10%;
+    width: 160%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255,215,0,.55), rgba(255,255,255,.12), transparent);
+    opacity:.22;
+    transform: rotate(-8deg);
+    animation: lineSweep 4.2s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes lineSweep{
+    0%,100%{ transform: translateX(-10%) rotate(-8deg); opacity:.16; }
+    45%{ opacity:.36; }
+    50%{ transform: translateX(10%) rotate(-8deg); }
+  }
+
+  /* --- Cover panel (more “premium banner”) --- */
   .hero-cover{
-    height: 170px;
-    border-radius: 22px;
+    height: 178px;
+    border-radius: 24px;
     border: 1px solid rgba(255,255,255,.08);
     background:
       linear-gradient(120deg, rgba(255,215,0,.12), rgba(187,134,252,.10), rgba(255,255,255,.04)),
-      radial-gradient(800px 220px at 20% 0%, rgba(255,215,0,.18), transparent 60%),
-      radial-gradient(700px 240px at 80% 10%, rgba(187,134,252,.16), transparent 55%),
-      linear-gradient(145deg, rgba(0,0,0,.25), rgba(0,0,0,.45));
+      radial-gradient(820px 240px at 20% 0%, rgba(255,215,0,.20), transparent 62%),
+      radial-gradient(720px 260px at 80% 12%, rgba(187,134,252,.18), transparent 58%),
+      linear-gradient(145deg, rgba(0,0,0,.22), rgba(0,0,0,.46));
     box-shadow: 0 16px 40px rgba(0,0,0,.55);
     position: relative;
     overflow:hidden;
     margin-bottom: 18px;
   }
+  .hero-cover::before{
+    content:"";
+    position:absolute;
+    inset:-90px -140px auto auto;
+    width: 320px; height: 320px;
+    background: radial-gradient(circle, rgba(255,215,0,.14), transparent 62%);
+    pointer-events:none;
+  }
   .hero-cover::after{
     content:"";
     position:absolute;
-    inset:-60px -160px auto auto;
-    width: 360px; height: 360px;
+    inset:-70px -180px auto auto;
+    width: 420px; height: 420px;
     background: linear-gradient(120deg, transparent 35%, rgba(255,215,0,.12) 50%, transparent 65%);
     transform: translateX(-30%) rotate(12deg);
     opacity:.55;
-    animation: sweep 3.9s ease-in-out infinite;
+    animation: sweep 3.8s ease-in-out infinite;
     pointer-events:none;
   }
   @keyframes sweep{
-    0%{ transform: translateX(-40%) rotate(12deg); opacity:.22; }
-    45%{ opacity:.85; }
-    100%{ transform: translateX(40%) rotate(12deg); opacity:.22; }
+    0%{ transform: translateX(-40%) rotate(12deg); opacity:.20; }
+    45%{ opacity:.88; }
+    100%{ transform: translateX(40%) rotate(12deg); opacity:.20; }
   }
 
   .cover-row{
@@ -190,7 +251,7 @@
     padding: 9px 12px;
     border-radius: 999px;
     border: 1px solid rgba(255,215,0,.18);
-    background: rgba(0,0,0,.26);
+    background: rgba(0,0,0,.28);
     color:#eaeaea;
     font-size: 13px;
     backdrop-filter: blur(10px);
@@ -198,54 +259,68 @@
   }
   .cover-chip b{ color: var(--gold); }
 
+  /* --- Brand row --- */
   .brand{
-    display:flex; align-items:center; gap:14px;
-    margin-bottom: 8px;
+    display:flex; align-items:flex-start; gap:14px;
+    margin-bottom: 10px;
   }
   .logo-box{
-    width: 74px; height: 74px;
-    border-radius: 22px;
-    background: rgba(0,0,0,.25);
+    width: 76px; height: 76px;
+    border-radius: 24px;
+    background: rgba(0,0,0,.26);
     border: 1px solid rgba(255,215,0,.22);
     display:flex; align-items:center; justify-content:center;
     overflow:hidden;
     position: relative;
     animation: pop 850ms ease-out both;
+    box-shadow: 0 18px 40px rgba(0,0,0,.50);
   }
   .logo-box img{ width: 56px; height:auto; }
   .logo-box::after{
     content:"";
     position:absolute;
-    inset:-44px;
-    background: linear-gradient(120deg, transparent 35%, rgba(255,215,0,.26) 50%, transparent 65%);
+    inset:-48px;
+    background: linear-gradient(120deg, transparent 35%, rgba(255,215,0,.28) 50%, transparent 65%);
     transform: translateX(-60%) rotate(10deg);
-    animation: shine 2.7s ease-in-out infinite;
+    animation: shine 2.65s ease-in-out infinite;
     pointer-events:none;
   }
   @keyframes shine{
-    0%{ transform: translateX(-75%) rotate(10deg); opacity:.22; }
-    35%{ opacity:.92; }
-    100%{ transform: translateX(75%) rotate(10deg); opacity:.22; }
+    0%{ transform: translateX(-75%) rotate(10deg); opacity:.20; }
+    35%{ opacity:.95; }
+    100%{ transform: translateX(75%) rotate(10deg); opacity:.20; }
   }
   @keyframes pop{
-    0%{ transform: scale(.75); opacity:0; }
+    0%{ transform: scale(.78); opacity:0; }
     70%{ transform: scale(1.06); opacity:1; }
     100%{ transform: scale(1); }
   }
 
   .hero-title{
     margin:0;
-    color: var(--gold);
-    letter-spacing: 1px;
-    font-size: 32px;
-    line-height: 1.08;
+    letter-spacing: .9px;
+    font-size: 34px;
+    line-height: 1.06;
+    background: linear-gradient(135deg, var(--gold), #ffeaa0, var(--platinum));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 10px 26px rgba(255,215,0,.08);
+  }
+  .hero-title .dot{
+    display:inline-block;
+    width: 8px; height: 8px; margin-left: 8px;
+    border-radius: 99px;
+    background: radial-gradient(circle, rgba(255,215,0,.95), rgba(255,215,0,.18));
+    box-shadow: 0 0 0 6px rgba(255,215,0,.06);
+    transform: translateY(-4px);
   }
   .hero-sub{
     margin: 10px 0 0;
     color: var(--muted);
     font-size: 14.5px;
-    line-height: 1.6;
-    max-width: 72ch;
+    line-height: 1.65;
+    max-width: 74ch;
   }
 
   .who{
@@ -256,7 +331,7 @@
     padding: 10px 12px;
     border-radius: 999px;
     border: 1px solid rgba(255,215,0,.16);
-    background: rgba(0,0,0,.22);
+    background: rgba(0,0,0,.24);
     color:#eaeaea;
     font-size: 13px;
     backdrop-filter: blur(10px);
@@ -264,6 +339,7 @@
   }
   .who b{ color: var(--gold); }
 
+  /* --- CTA (more premium) --- */
   .cta-row{
     display:flex;
     gap: 10px;
@@ -281,21 +357,38 @@
     font-weight: 950;
     letter-spacing: .55px;
     border: 1px solid transparent;
-    transition: .25s;
+    transition: transform .22s, box-shadow .22s, border-color .22s, background .22s;
     cursor:pointer;
     user-select:none;
     white-space:nowrap;
   }
   .btn.primary{
     background: linear-gradient(135deg, var(--gold), var(--gold2));
-    color:#151515;
+    color:#161616;
     box-shadow: 0 14px 34px rgba(255,215,0,.22);
+    position: relative;
+    overflow:hidden;
+  }
+  .btn.primary::after{
+    content:"";
+    position:absolute; inset:-80px;
+    background: linear-gradient(120deg, transparent 35%, rgba(255,255,255,.20) 50%, transparent 65%);
+    transform: translateX(-70%) rotate(10deg);
+    opacity:.55;
+    transition: .25s;
+    pointer-events:none;
   }
   .btn.primary:hover{
     transform: translateY(-2px);
-    box-shadow: 0 18px 44px rgba(255,215,0,.30);
+    box-shadow: 0 20px 48px rgba(255,215,0,.28);
     background: linear-gradient(135deg, #ffe44d, #d4b200);
   }
+  .btn.primary:hover::after{
+    transform: translateX(70%) rotate(10deg);
+    opacity:.75;
+  }
+  .btn.primary:active{ transform: translateY(0); box-shadow: 0 14px 34px rgba(255,215,0,.22); }
+
   .btn.secondary{
     background: rgba(0,0,0,.22);
     color: var(--text);
@@ -307,14 +400,14 @@
     box-shadow: 0 16px 34px rgba(0,0,0,.40);
   }
 
-  /* stats */
-  .stats{
+  /* --- KPI strip (luxury metrics style) --- */
+  .kpis{
     margin-top: 16px;
     display:grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
   }
-  .stat{
+  .kpi{
     border-radius: 18px;
     background: rgba(0,0,0,.20);
     border: 1px solid rgba(255,255,255,.10);
@@ -323,18 +416,18 @@
     position: relative;
     overflow:hidden;
   }
-  .stat:hover{ transform: translateY(-2px); border-color: rgba(255,215,0,.22); }
-  .stat small{ display:block; color: var(--muted); font-size: 12.5px; }
-  .stat b{ display:block; font-size: 18px; margin-top: 6px; color: #fff; letter-spacing:.3px; }
-  .stat .glow{
-    position:absolute; inset:-60px auto auto -80px; width: 220px; height: 220px;
-    background: radial-gradient(circle, rgba(255,215,0,.10), transparent 60%);
+  .kpi:hover{ transform: translateY(-2px); border-color: rgba(255,215,0,.22); }
+  .kpi small{ display:block; color: var(--muted2); font-size: 12.2px; }
+  .kpi b{ display:block; font-size: 18px; margin-top: 6px; color: #fff; letter-spacing:.3px; }
+  .kpi .glow{
+    position:absolute; inset:-70px auto auto -90px; width: 260px; height: 260px;
+    background: radial-gradient(circle, rgba(255,215,0,.11), transparent 62%);
     pointer-events:none;
   }
 
-  /* right side panel */
+  /* --- Right panel (concierge) --- */
   .side{
-    border-radius: 30px;
+    border-radius: var(--radius-xl);
     background: var(--glass2);
     border: 1px solid rgba(255,215,0,.14);
     box-shadow: var(--shadow2);
@@ -348,9 +441,9 @@
   .side::before{
     content:"";
     position:absolute;
-    inset:-90px -140px auto auto;
-    width: 300px; height: 300px;
-    background: radial-gradient(circle, rgba(187,134,252,.14), transparent 62%);
+    inset:-110px -160px auto auto;
+    width: 360px; height: 360px;
+    background: radial-gradient(circle, rgba(187,134,252,.16), transparent 62%);
     pointer-events:none;
   }
   .chip{
@@ -375,7 +468,7 @@
     margin: 0 0 14px;
     color: var(--muted);
     font-size: 13.5px;
-    line-height: 1.55;
+    line-height: 1.6;
   }
 
   .mini-actions{ display:grid; grid-template-columns: 1fr; gap: 10px; }
@@ -391,6 +484,15 @@
     text-decoration:none;
     color: var(--text);
     transition:.22s;
+    position: relative;
+    overflow:hidden;
+  }
+  .mini::after{
+    content:"";
+    position:absolute; inset:-80px;
+    background: radial-gradient(circle at 30% 10%, rgba(255,215,0,.10), transparent 55%);
+    opacity:.55;
+    pointer-events:none;
   }
   .mini:hover{
     transform: translateY(-2px);
@@ -411,21 +513,31 @@
     flex: 0 0 auto;
   }
 
-  /* sections */
-  .section{ margin-top: 18px; animation: inUp 900ms ease both; }
+  /* --- Sections (premium tiles) --- */
+  .section{ margin-top: 20px; animation: inUp 900ms ease both; }
+  .section-head{
+    display:flex; align-items:flex-end; justify-content:space-between; gap:12px;
+    margin: 26px 0 12px;
+  }
   .section-title{
-    margin: 24px 0 12px;
+    margin:0;
     font-size: 16px;
     color: #f6f6f6;
-    letter-spacing: .5px;
+    letter-spacing: .55px;
   }
+  .section-sub{
+    margin:0;
+    color: var(--muted2);
+    font-size: 12.8px;
+  }
+
   .grid{
     display:grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 12px;
   }
   .cardx{
-    border-radius: 24px;
+    border-radius: 26px;
     background: rgba(20,20,22,.52);
     border: 1px solid rgba(255,255,255,.10);
     box-shadow: 0 18px 45px rgba(0,0,0,.62);
@@ -436,8 +548,15 @@
     position: relative;
     overflow:hidden;
   }
+  .cardx::before{
+    content:"";
+    position:absolute; inset:-90px;
+    background: radial-gradient(circle at 20% 10%, rgba(255,215,0,.10), transparent 55%);
+    opacity:.65;
+    pointer-events:none;
+  }
   .cardx:hover{ transform: translateY(-3px); border-color: rgba(255,215,0,.22); }
-  .cardx .top{ display:flex; align-items:center; gap: 10px; margin-bottom: 10px; }
+  .cardx .top{ display:flex; align-items:center; gap: 10px; margin-bottom: 10px; position: relative; }
   .badge{
     width: 46px; height: 46px;
     border-radius: 18px;
@@ -448,18 +567,390 @@
     flex: 0 0 auto;
   }
   .cardx h4{ margin: 0; font-size: 14.5px; letter-spacing: .3px; color: #fff; }
-  .cardx p{ margin: 8px 0 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+  .cardx p{ margin: 8px 0 0; color: var(--muted); font-size: 13px; line-height: 1.65; position: relative; }
 
   @keyframes inUp{ from{ opacity:0; transform: translateY(16px);} to{ opacity:1; transform: translateY(0);} }
 
   @media (max-width: 980px){
     .hero{ grid-template-columns: 1fr; }
-    .stats{ grid-template-columns: 1fr; }
+    .kpis{ grid-template-columns: 1fr; }
     .grid{ grid-template-columns: 1fr; }
   }
+  /* --- Featured suites carousel --- */
+.suite-wrap{
+  position: relative;
+  border-radius: var(--radius-xl);
+  padding: 14px 48px;
+  background: rgba(0,0,0,.16);
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: 0 18px 45px rgba(0,0,0,.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  overflow:hidden;
+}
+.suite-wrap::before{
+  content:"";
+  position:absolute; inset:-120px;
+  background: radial-gradient(circle at 15% 10%, rgba(255,215,0,.10), transparent 55%),
+              radial-gradient(circle at 85% 20%, rgba(187,134,252,.12), transparent 58%);
+  opacity:.7;
+  pointer-events:none;
+}
+.suite-row{
+  display:flex;
+  gap: 12px;
+  overflow:auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding: 6px 2px;
+}
+.suite-row::-webkit-scrollbar{ height: 10px; }
+.suite-row::-webkit-scrollbar-thumb{
+  background: rgba(255,255,255,.10);
+  border-radius: 999px;
+}
+.suite{
+  flex: 0 0 360px;
+  scroll-snap-align: start;
+  border-radius: 28px;
+  background: rgba(20,20,22,.55);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 18px 45px rgba(0,0,0,.62);
+  overflow:hidden;
+  position: relative;
+  transition: .22s;
+}
+.suite:hover{ transform: translateY(-3px); border-color: rgba(255,215,0,.22); }
+
+.suite-media{
+  height: 150px;
+  background:
+    radial-gradient(820px 240px at 30% 0%, rgba(255,215,0,.20), transparent 60%),
+    radial-gradient(720px 240px at 80% 20%, rgba(255,255,255,.06), transparent 60%),
+    linear-gradient(145deg, rgba(0,0,0,.18), rgba(0,0,0,.55));
+  position: relative;
+}
+.suite-media.alt{
+  background:
+    radial-gradient(820px 240px at 30% 0%, rgba(255,215,0,.10), transparent 60%),
+    radial-gradient(720px 240px at 80% 20%, rgba(187,134,252,.10), transparent 60%),
+    linear-gradient(145deg, rgba(0,0,0,.18), rgba(0,0,0,.55));
+}
+.suite-media.violet{
+  background:
+    radial-gradient(820px 240px at 25% 0%, rgba(187,134,252,.20), transparent 60%),
+    radial-gradient(720px 240px at 80% 20%, rgba(255,215,0,.10), transparent 60%),
+    linear-gradient(145deg, rgba(0,0,0,.18), rgba(0,0,0,.55));
+}
+.suite-grad{
+  position:absolute; inset:-90px;
+  background: conic-gradient(from 210deg,
+    rgba(255,215,0,.0),
+    rgba(255,215,0,.18),
+    rgba(187,134,252,.14),
+    rgba(255,255,255,.08),
+    rgba(255,215,0,.0));
+  filter: blur(26px);
+  opacity:.55;
+  animation: orbit 8.5s linear infinite;
+}
+.suite-tag{
+  position:absolute;
+  left: 14px; top: 14px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,215,0,.18);
+  background: rgba(0,0,0,.28);
+  color:#f0f0f0;
+  font-size: 13px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.suite-body{ padding: 16px 16px 18px; position: relative; }
+.suite-top{
+  display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+}
+.suite h4{
+  margin:0;
+  color:#fff;
+  font-size: 15px;
+  letter-spacing:.35px;
+}
+.suite p{
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  max-width: 34ch;
+}
+.price{
+  text-align:right;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.20);
+}
+.price small{ display:block; color: var(--muted2); font-size: 11.5px; }
+.price b{
+  display:block;
+  font-size: 18px;
+  color: var(--gold);
+  letter-spacing:.3px;
+  margin-top: 4px;
+}
+.price span{ display:block; color: var(--muted2); font-size: 11.5px; margin-top: 2px; }
+
+.suite-feats{
+  display:flex; gap: 8px; flex-wrap: wrap;
+  margin-top: 12px;
+}
+.feat{
+  font-size: 12.5px;
+  color:#eaeaea;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.20);
+}
+.suite-actions{
+  display:flex; gap: 10px; flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.navbtn{
+  position:absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px; height: 40px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,215,0,.18);
+  background: rgba(0,0,0,.35);
+  color: var(--gold);
+  font-size: 22px;
+  cursor:pointer;
+  transition: .22s;
+  z-index: 2;
+}
+.navbtn:hover{
+  transform: translateY(-50%) scale(1.05);
+  border-color: rgba(255,215,0,.32);
+  box-shadow: 0 14px 34px rgba(0,0,0,.45);
+}
+.navbtn[data-dir="-1"]{ left: 10px; }
+.navbtn[data-dir="1"]{ right: 10px; }
+
+.live-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+  margin-top: 12px;
+}
+.live{
+  display:flex; align-items:center; gap: 10px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.20);
+}
+.live b{ color:#fff; font-size: 13.5px; }
+.live small{ display:block; color: var(--muted2); font-size: 12px; margin-top: 2px; }
+.live-dot{
+  width:10px; height:10px; border-radius: 999px;
+  background: rgba(77,255,139,.95);
+  box-shadow: 0 0 0 6px rgba(77,255,139,.10);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%,100%{ transform: scale(1); opacity: .9; }
+  50%{ transform: scale(1.15); opacity: 1; }
+}
+.live-badges{ display:flex; gap: 8px; flex-wrap: wrap; justify-content:flex-end; }
+.live-badge{
+  font-size: 12.5px;
+  color:#eaeaea;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.20);
+}
+.live-badge.gold{
+  border-color: rgba(255,215,0,.22);
+  background: rgba(255,215,0,.08);
+  color: #fff;
+}
+
+@media (max-width: 980px){
+  .suite-wrap{ padding: 14px 14px; }
+  .navbtn{ display:none; }
+  .suite{ flex-basis: 86%; }
+  .live-row{ flex-direction: column; align-items:flex-start; }
+  .live-badges{ justify-content:flex-start; }
+}
+
+/* --- Reservation lookup --- */
+
+.lookup{
+  display:grid;
+  grid-template-columns: 1.25fr .75fr;
+  gap: 12px;
+  border-radius: var(--radius-xl);
+  padding: 18px;
+  background: rgba(0,0,0,.16);
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: 0 18px 45px rgba(0,0,0,.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  overflow:hidden;
+  position: relative;
+}
+.lookup::before{
+  content:"";
+  position:absolute; inset:-120px;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(255,215,0,.12), transparent 55%),
+    radial-gradient(circle at 85% 20%, rgba(187,134,252,.12), transparent 58%);
+  opacity:.75;
+  pointer-events:none;
+}
+
+.lookup-left{ position: relative; padding: 6px; }
+.lookup-title{
+  font-weight: 950;
+  letter-spacing: .5px;
+  color: #fff;
+  font-size: 18px;
+}
+.lookup-sub{
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.6;
+  max-width: 62ch;
+}
+
+.lookup-form{ margin-top: 14px; }
+.lab{
+  display:block;
+  font-size: 12.5px;
+  color: var(--muted2);
+  margin-bottom: 6px;
+}
+.field{
+  display:flex;
+  gap: 10px;
+  align-items: stretch;
+}
+.field input{
+  flex: 1;
+  background: rgba(0,0,0,.22);
+  border: 1px solid rgba(255,255,255,.10);
+  color: #fff;
+  padding: 13px 14px;
+  border-radius: 16px;
+  outline: none;
+  transition: .2s;
+}
+.field input::placeholder{ color: rgba(255,255,255,.35); }
+.field input:focus{
+  border-color: rgba(255,215,0,.28);
+  box-shadow: 0 0 0 6px rgba(255,215,0,.06);
+}
+.hint{
+  margin-top: 10px;
+  font-size: 12.5px;
+  color: var(--muted2);
+}
+
+/* right side seal */
+.lookup-right{
+  position: relative;
+  display:flex;
+  flex-direction: column;
+  align-items:center;
+  justify-content:center;
+  gap: 12px;
+  padding: 10px 6px;
+}
+.seal{
+  width: 170px;
+  height: 170px;
+  position: relative;
+  border-radius: 999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.seal-ring{
+  position:absolute;
+  inset: 0;
+  border-radius: 999px;
+  background:
+    conic-gradient(from 220deg,
+      rgba(255,215,0,.0),
+      rgba(255,215,0,.45),
+      rgba(187,134,252,.25),
+      rgba(255,255,255,.10),
+      rgba(255,215,0,.0));
+  filter: blur(.2px);
+  opacity:.9;
+  animation: orbit 7.8s linear infinite;
+}
+.seal-core{
+  width: 132px; height: 132px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.28);
+  border: 1px solid rgba(255,215,0,.18);
+  box-shadow: 0 20px 55px rgba(0,0,0,.55);
+  display:flex;
+  flex-direction: column;
+  align-items:center;
+  justify-content:center;
+  gap: 6px;
+  text-align:center;
+  padding: 10px;
+}
+.seal-top{
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,.80);
+}
+.seal-mid{
+  font-size: 18px;
+  font-weight: 950;
+  letter-spacing: 1px;
+  background: linear-gradient(135deg, var(--gold), #ffeaa0, var(--platinum));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.seal-bot{
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,.65);
+}
+
+.lookup-badges{ display:flex; gap: 8px; flex-wrap: wrap; justify-content:center; }
+
+/* testimonials */
+.quote{
+  display:block;
+  margin-top: 10px;
+  color: rgba(255,255,255,.70);
+  font-size: 12.5px;
+  letter-spacing: .2px;
+}
+
+@media (max-width: 980px){
+  .lookup{ grid-template-columns: 1fr; }
+  .field{ flex-direction: column; }
+  .seal{ width: 160px; height: 160px; }
+}
+
 </style>
 
 <div class="grain" aria-hidden="true"></div>
+<div class="aurora" aria-hidden="true"></div>
 <div class="bg-particles" aria-hidden="true">
   <span class="p"></span><span class="p"></span><span class="p"></span><span class="p"></span><span class="p"></span>
 </div>
@@ -467,11 +958,81 @@
 <div class="page">
 
   <div class="topbar">
-    <div class="crumb">🏨 <b>HOTEL BUFF</b> • Home</div>
+
+<section class="section">
+  <div class="section-head">
+    <h3 class="section-title">Alerts Center</h3>
+    <p class="section-sub">Smart notifications • instant actions • premium control</p>
+  </div>
+
+  <div class="grid">
     {% if session.get('role') == 'admin' %}
-      <div class="crumb">🛡️ Role: <b>Admin</b></div>
+      <div class="cardx">
+        <div class="top"><div class="badge">🛎️</div><h4>Today’s Operations</h4></div>
+        <p>
+         Check-ins: <b>{{ alerts.get('checkins', 0) }}</b> •
+Check-outs: <b>{{ alerts.get('checkouts', 0) }}</b> •
+Pending approvals: <b>{{ alerts.get('pending', 0) }}</b>
+          Pending approvals: <b>{{ alerts.pending or 0 }}</b>
+        </p>
+      </div>
+
+      <div class="cardx">
+        <div class="top"><div class="badge">✉️</div><h4>Messages</h4></div>
+        <p>
+          New contact messages: <b>{{ alerts.messages or 0 }}</b> •
+          Response SLA: <b>24h</b>
+        </p>
+      </div>
+
+      <div class="cardx">
+        <div class="top"><div class="badge">⚠️</div><h4>Risk & Conflicts</h4></div>
+        <p>
+          Overlaps detected: <b>{{ alerts.conflicts or 0 }}</b> •
+          High occupancy: <b>{{ alerts.occupancy or 0 }}%</b>
+        </p>
+      </div>
+
     {% else %}
-      <div class="crumb">👤 Role: <b>User</b></div>
+      <div class="cardx">
+        <div class="top"><div class="badge">📄</div><h4>Your Reservation</h4></div>
+        <div class="cta-row" style="margin-top:12px;">
+  <a class="btn primary" href="{{ url_for('booking_status') }}">📄 Open Booking Status</a>
+  <a class="btn secondary" href="{{ url_for('booking') }}">🛎️ Book Now</a>
+</div>
+        <p>
+          Quick access to Booking Status with your email. Transparent tracking — no calls, no delays.
+        </p>
+      </div>
+
+      <div class="cardx">
+        <div class="top"><div class="badge">🔐</div><h4>Security</h4></div>
+        <p>
+          Your session is protected. You can book, check status, and contact support safely.
+        </p>
+      </div>
+
+      <div class="cardx">
+        <div class="top"><div class="badge">⭐</div><h4>Premium Tips</h4></div>
+        <p>
+          Best rates typically appear for mid-week stays. Use the availability checker for instant results.
+        </p>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+
+
+
+
+
+
+    <div class="pill">🏨 <b>HOTEL BUFF</b> • Home</div>
+    {% if session.get('role') == 'admin' %}
+      <div class="pill">🛡️ Role: <b>Admin</b></div>
+    {% else %}
+      <div class="pill">👤 Role: <b>User</b></div>
     {% endif %}
   </div>
 
@@ -485,14 +1046,15 @@
 
   <div class="hero">
 
-    <!-- LEFT HERO (Ultra Frame + Cover) -->
+    <!-- LEFT HERO -->
     <section class="frame" id="tiltHero">
       <div class="hero-card">
+        <div class="spec" aria-hidden="true"></div>
 
         <div class="hero-cover">
           <div class="cover-row">
-            <div class="cover-chip">⭐ <b>Ultra Premium</b> Suite UI</div>
-            <div class="cover-chip">⚡ Fast booking • 🔐 Secure</div>
+            <div class="cover-chip">⭐ <b>Prestige</b> Experience</div>
+            <div class="cover-chip">⚡ Fast flow • 🔐 Secure access</div>
           </div>
         </div>
 
@@ -500,10 +1062,12 @@
           <div class="logo-box">
             <img src="{{ url_for('static', filename='images/logo.png') }}" alt="HOTEL BUFF">
           </div>
+
           <div>
-            <h1 class="hero-title">Welcome to HOTEL BUFF</h1>
+            <h1 class="hero-title">Welcome to HOTEL BUFF <span class="dot"></span></h1>
             <div class="hero-sub">
-              Premium comfort, modern design, and effortless booking — with a clean admin system and secure access.
+              A premium guest experience with an elegant interface: quick booking, transparent reservation tracking,
+              and secure role-based admin tools.
             </div>
 
             {% if user %}
@@ -523,10 +1087,10 @@
           {% endif %}
         </div>
 
-        <div class="stats">
-          <div class="stat"><span class="glow"></span><small>Experience</small><b>Suite UI</b></div>
-          <div class="stat"><span class="glow"></span><small>Flow</small><b>Fast Booking</b></div>
-          <div class="stat"><span class="glow"></span><small>Security</small><b>Role-Based</b></div>
+        <div class="kpis">
+          <div class="kpi"><span class="glow"></span><small>Experience</small><b>Luxury UI</b></div>
+          <div class="kpi"><span class="glow"></span><small>Flow</small><b>Fast Booking</b></div>
+          <div class="kpi"><span class="glow"></span><small>Security</small><b>Role-Based</b></div>
         </div>
 
       </div>
@@ -534,9 +1098,9 @@
 
     <!-- RIGHT SIDE -->
     <aside class="side">
-      <div class="chip">⭐ Premium Dashboard</div>
+      <div class="chip">⭐ Concierge Panel</div>
       <h3>Quick Actions</h3>
-      <p>Everything you need in one place — booking, tracking, gallery, and admin tools (if enabled).</p>
+      <p>Everything in one place — explore the gallery, contact support, or track your reservation instantly.</p>
 
       <div class="mini-actions">
         <a class="mini" href="{{ url_for('images') }}">
@@ -566,41 +1130,410 @@
   </div>
 
   <section class="section">
-    <div class="section-title">Why HOTEL BUFF?</div>
+    <div class="section-head">
+      <h3 class="section-title">Why HOTEL BUFF?</h3>
+      <p class="section-sub">Luxury identity • clean UX • confident security</p>
+    </div>
+
     <div class="grid">
       <div class="cardx">
         <div class="top"><div class="badge">👑</div><h4>Luxury Feel</h4></div>
-        <p>Consistent black & gold identity with glassmorphism, premium lighting, and subtle motion.</p>
+        <p>Premium black & gold identity with glassmorphism, refined lighting, and subtle motion accents.</p>
       </div>
 
       <div class="cardx">
         <div class="top"><div class="badge">⚡</div><h4>Fast Booking Flow</h4></div>
-        <p>Quick check-in form, booking tracking via Booking Status, and clean UX for guests.</p>
+        <p>Quick check-in form, reservation tracking via Booking Status, and a frictionless guest journey.</p>
       </div>
 
       <div class="cardx">
         <div class="top"><div class="badge">🔐</div><h4>Secure Accounts</h4></div>
-        <p>Role-based access (admin/user), protected admin pages, and robust session handling.</p>
+        <p>Role-based access (admin/user), protected admin pages, and consistent session controls.</p>
       </div>
     </div>
   </section>
 
+
+
+<!-- proba -->
+<section class="section">
+  <div class="section-head">
+    <h3 class="section-title">Live Availability</h3>
+<section class="section">
+  <div class="section-head">
+    <h3 class="section-title">Recent Activity</h3>
+    <p class="section-sub">Transparent history • trust • accountability</p>
+  </div>
+
+  <div class="cardx" style="padding:18px 18px;">
+    <div style="display:grid; gap:10px;">
+      {% for a in activity %}
+        <div style="
+          display:flex; justify-content:space-between; gap:12px; align-items:flex-start;
+          padding:12px 14px; border-radius:18px;
+          border:1px solid rgba(255,255,255,.10); background: rgba(0,0,0,.18);
+        ">
+          <div>
+            <div style="color:#fff; font-weight:800; letter-spacing:.2px;">{{ a.title }}</div>
+            <div style="color: rgba(255,255,255,.65); font-size:12.5px; margin-top:2px;">{{ a.desc }}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="color: var(--gold); font-weight:900; font-size:12.5px;">{{ a.tag }}</div>
+            <div style="color: rgba(255,255,255,.55); font-size:12px; margin-top:2px;">{{ a.time }}</div>
+          </div>
+        </div>
+      {% else %}
+        <div style="color: rgba(255,255,255,.65); font-size:13px;">
+          No recent activity yet.
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+
+
+    <p class="section-sub">Instant availability • smart insights • premium control</p>
+  </div>
+
+  <div class="lookup" style="grid-template-columns: 1.2fr .8fr;">
+    <div class="lookup-left">
+      <div class="lookup-title">Check available rooms in real-time</div>
+      <div class="lookup-sub">
+        Select your dates and instantly see if we have availability. Transparent, fast, and accurate.
+      </div>
+
+      <form class="lookup-form" action="{{ url_for('availability') }}" method="get">
+        <label class="lab" for="ai">Check-in</label>
+        <div class="field">
+          <input id="ai" name="check_in" type="date" required>
+          <input id="ao" name="check_out" type="date" required>
+          <button class="btn primary" type="submit">⚡ Check</button>
+        </div>
+        <div class="hint">Tip: choose check-in and check-out to see availability.</div>
+      </form>
+
+      {% if availability %}
+        <div class="flash success" style="margin-top:12px;">
+          ✅ Available rooms: <b>{{ availability.available }}</b> • Occupancy: <b>{{ availability.occupancy }}%</b>
+        </div>
+      {% endif %}
+
+      {% if availability_error %}
+        <div class="flash error" style="margin-top:12px;">
+          {{ availability_error }}
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="lookup-right">
+      {% if session.get('role') == 'admin' and admin_insights %}
+        <div class="seal">
+          <div class="seal-ring"></div>
+          <div class="seal-core">
+            <div class="seal-top">ADMIN</div>
+            <div class="seal-mid">INSIGHTS</div>
+            <div class="seal-bot">TODAY</div>
+          </div>
+        </div>
+
+        <div class="lookup-badges" style="margin-top:8px;">
+          <span class="live-badge">🛎️ Check-ins: <b>{{ admin_insights.checkins }}</b></span>
+          <span class="live-badge">🏁 Check-outs: <b>{{ admin_insights.checkouts }}</b></span>
+          <span class="live-badge gold">📌 Active: <b>{{ admin_insights.active }}</b></span>
+          {% if admin_insights.conflicts > 0 %}
+            <span class="live-badge" style="border-color: rgba(255,77,77,.35);">
+              ⚠️ Conflicts: <b>{{ admin_insights.conflicts }}</b>
+            </span>
+          {% else %}
+            <span class="live-badge">✅ No conflicts</span>
+          {% endif %}
+        </div>
+      {% else %}
+        <div class="seal">
+          <div class="seal-ring"></div>
+          <div class="seal-core">
+            <div class="seal-top">HOTEL BUFF</div>
+            <div class="seal-mid">LIVE</div>
+            <div class="seal-bot">AVAILABILITY</div>
+          </div>
+        </div>
+
+        <div class="lookup-badges">
+          <span class="live-badge">⚡ Fast</span>
+          <span class="live-badge gold">⭐ Premium</span>
+          <span class="live-badge">🔐 Secure</span>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+<!-- proba -->
+
+
+
+
+
+
+
   <section class="section">
-    <div class="section-title">Premium Services</div>
+    <div class="section-head">
+      <h3 class="section-title">Premium Services</h3>
+
+<section class="section">
+  <div class="section-head">
+    <h3 class="section-title">Featured Suites</h3>
+    <section class="section">
+  <div class="section-head">
+    <h3 class="section-title">Smart Offers</h3>
+    <p class="section-sub">Dynamic pricing logic • premium upgrade • better occupancy</p>
+  </div>
+
+  <div class="grid">
+    {% for o in offers %}
+      <div class="cardx">
+        <div class="top"><div class="badge">{{ o.icon }}</div><h4>{{ o.title }}</h4></div>
+        <p>{{ o.desc }}</p>
+        <div class="cta-row" style="margin-top:12px;">
+          <a class="btn primary" href="{{ url_for('booking') }}">🛎️ Apply</a>
+          {% if session.get('role') == 'admin' %}
+            <a class="btn secondary" href="{{ url_for('admin_bookings') }}">📋 Monitor</a>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+
+    <section class="section">
+  <div class="section-head">
+    <h3 class="section-title">Reservation Lookup</h3>
+    
+    <section class="section">
+  <div class="section-head">
+    <h3 class="section-title">Guest Reviews</h3>
+    <p class="section-sub">Trusted comfort • premium service • repeat stays</p>
+  </div>
+
+  <div class="grid">
+    <div class="cardx">
+      <div class="top">
+        <div class="badge">🌟</div>
+        <h4>“Elegant and fast booking.”</h4>
+      </div>
+      <p>
+        The interface is premium and simple. Booking took less than a minute and the status tracking is clear.
+        <span class="quote">— A. Petrovski</span>
+      </p>
+    </div>
+
+    <div class="cardx">
+      <div class="top">
+        <div class="badge">👑</div>
+        <h4>“Luxury feel in every detail.”</h4>
+      </div>
+      <p>
+        Beautiful dark-gold design, smooth navigation, and everything is in one place. Feels like a real hotel platform.
+        <span class="quote">— E. Nikolova</span>
+      </p>
+    </div>
+
+    <div class="cardx">
+      <div class="top">
+        <div class="badge">🔐</div>
+        <h4>“Secure and professional.”</h4>
+      </div>
+      <p>
+        I like the secure experience and clean flow. The admin tools (when enabled) look serious and well organized.
+        <span class="quote">— S. Trajkovski</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+    <p class="section-sub">Check your booking status instantly</p>
+  </div>
+
+  <div class="lookup">
+    <div class="lookup-left">
+      <div class="lookup-title">Find your reservation in seconds</div>
+      <div class="lookup-sub">
+        Enter your email and go directly to Booking Status. Fast, private, and secure.
+      </div>
+
+      <form class="lookup-form" action="{{ url_for('booking_status') }}" method="post">
+  <label class="lab" for="lookupEmail">Email</label>
+  <div class="field">
+    <input id="lookupEmail" name="email" type="email" placeholder="you@example.com" required>
+    <button class="btn primary" type="submit">📄 Check</button>
+  </div>
+  <div class="hint">Tip: use the same email you used during booking.</div>
+</form>
+
+    </div>
+    <div class="lookup-right">
+      <div class="seal">
+        <div class="seal-ring"></div>
+        <div class="seal-core">
+          <div class="seal-top">HOTEL BUFF</div>
+          <div class="seal-mid">PREMIUM</div>
+          <div class="seal-bot">SECURE FLOW</div>
+        </div>
+      </div>
+
+      <div class="lookup-badges">
+        <span class="live-badge">🔐 Private</span>
+        <span class="live-badge gold">⭐ Premium</span>
+        <span class="live-badge">⚡ Fast</span>
+      </div>
+    </div>
+  </div>
+</section>
+    <p class="section-sub">Curated rooms • premium comfort • fast booking</p>
+  </div>
+
+  <div class="suite-wrap">
+    <button class="navbtn" type="button" aria-label="Scroll left" data-dir="-1">‹</button>
+
+    <div class="suite-row" id="suiteRow">
+      <article class="suite">
+        <div class="suite-media">
+          <div class="suite-tag">👑 Signature</div>
+          <div class="suite-grad" aria-hidden="true"></div>
+        </div>
+        <div class="suite-body">
+          <div class="suite-top">
+            <div>
+              <h4>Royal Gold Suite</h4>
+              <p>Panoramic vibe • executive comfort • premium finish</p>
+            </div>
+            <div class="price">
+              <small>From</small>
+              <b>€129</b>
+              <span>/night</span>
+            </div>
+          </div>
+
+          <div class="suite-feats">
+            <span class="feat">🛏️ King bed</span>
+            <span class="feat">🛁 Spa bath</span>
+            <span class="feat">📶 Fast Wi-Fi</span>
+          </div>
+
+          <div class="suite-actions">
+            <a class="btn primary" href="{{ url_for('booking') }}">🛎️ Book</a>
+            <a class="btn secondary" href="{{ url_for('images') }}">🖼️ View</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="suite">
+        <div class="suite-media alt">
+          <div class="suite-tag">⭐ Premium</div>
+          <div class="suite-grad" aria-hidden="true"></div>
+        </div>
+        <div class="suite-body">
+          <div class="suite-top">
+            <div>
+              <h4>Velvet Business Room</h4>
+              <p>Minimal luxury • quiet zone • work & rest</p>
+            </div>
+            <div class="price">
+              <small>From</small>
+              <b>€89</b>
+              <span>/night</span>
+            </div>
+          </div>
+
+          <div class="suite-feats">
+            <span class="feat">💻 Work desk</span>
+            <span class="feat">🔇 Quiet</span>
+            <span class="feat">☕ Coffee</span>
+          </div>
+
+          <div class="suite-actions">
+            <a class="btn primary" href="{{ url_for('booking') }}">🛎️ Book</a>
+            <a class="btn secondary" href="{{ url_for('images') }}">🖼️ View</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="suite">
+        <div class="suite-media violet">
+          <div class="suite-tag">✨ Exclusive</div>
+          <div class="suite-grad" aria-hidden="true"></div>
+        </div>
+        <div class="suite-body">
+          <div class="suite-top">
+            <div>
+              <h4>Midnight Executive</h4>
+              <p>Dark elegance • premium lighting • modern feel</p>
+            </div>
+            <div class="price">
+              <small>From</small>
+              <b>€109</b>
+              <span>/night</span>
+            </div>
+          </div>
+
+          <div class="suite-feats">
+            <span class="feat">🪟 City view</span>
+            <span class="feat">🧴 Premium kit</span>
+            <span class="feat">🅿️ Parking</span>
+          </div>
+
+          <div class="suite-actions">
+            <a class="btn primary" href="{{ url_for('booking') }}">🛎️ Book</a>
+            <a class="btn secondary" href="{{ url_for('images') }}">🖼️ View</a>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <button class="navbtn" type="button" aria-label="Scroll right" data-dir="1">›</button>
+  </div>
+
+  <div class="live-row">
+    <div class="live">
+      <span class="live-dot"></span>
+      <div>
+        <b>System status</b>
+        <small>Online • Secure • Ready</small>
+      </div>
+    </div>
+
+    <div class="live-badges">
+      <span class="live-badge">⚡ Fast booking</span>
+      <span class="live-badge">🔐 Session protected</span>
+      {% if session.get('role') == 'admin' %}
+        <span class="live-badge gold">🛡️ Admin enabled</span>
+      {% else %}
+        <span class="live-badge">👤 Guest mode</span>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+
+
+      <p class="section-sub">Comfort • dining • management</p>
+    </div>
+
     <div class="grid">
       <div class="cardx">
         <div class="top"><div class="badge">🛏️</div><h4>Comfort Rooms</h4></div>
-        <p>Designed for rest and productivity, with a premium atmosphere across the stay.</p>
+        <p>Designed for rest and productivity with a calm, premium atmosphere across the entire stay.</p>
       </div>
 
       <div class="cardx">
         <div class="top"><div class="badge">🍽️</div><h4>Dining & Buffet</h4></div>
-        <p>Signature BUFF-style service experience aligned with the brand identity.</p>
+        <p>Signature BUFF-style experience aligned with the brand identity and guest expectations.</p>
       </div>
 
       <div class="cardx">
         <div class="top"><div class="badge">🧾</div><h4>Admin Management</h4></div>
-        <p>Admins can manage bookings and users with a clean, premium interface.</p>
+        <p>Admins can manage bookings and users with a clean interface that feels premium and reliable.</p>
       </div>
     </div>
   </section>
@@ -629,3 +1562,45 @@
   })();
 </script>
 {% endblock %}
+
+<script>
+  // Premium tilt on hero frame (desktop only)
+  (function(){
+    const frame = document.getElementById("tiltHero");
+    if(!frame) return;
+    if(!window.matchMedia("(min-width: 981px)").matches) return;
+
+    frame.addEventListener("mousemove", (e) => {
+      const r = frame.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      const rx = (-y * 3.5).toFixed(2);
+      const ry = (x * 6).toFixed(2);
+      frame.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
+    });
+
+    frame.addEventListener("mouseleave", () => {
+      frame.style.transform = "rotateX(0deg) rotateY(0deg)";
+    });
+  })();
+
+  // Suites carousel navigation
+  (function(){
+    const row = document.getElementById("suiteRow");
+    if(!row) return;
+
+    function step(dir){
+      const card = row.querySelector(".suite");
+      const w = card ? (card.getBoundingClientRect().width + 12) : 360;
+      row.scrollBy({ left: dir * w, behavior: "smooth" });
+    }
+
+    document.querySelectorAll(".navbtn").forEach(btn => {
+      btn.addEventListener("click", () => step(parseInt(btn.dataset.dir, 10)));
+    });
+  })();
+
+
+
+
+</script>
