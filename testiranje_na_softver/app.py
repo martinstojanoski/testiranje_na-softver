@@ -874,24 +874,7 @@ def availability():
 
 
 
-# -------------------
-# aalerts
-# -------------------
-@app.route("/")
-def home():
-    user = session.get("user")  # или "username" кај тебе
 
-    alerts = {
-        "checkins": 0,
-        "checkouts": 0,
-        "pending": 0,
-        "messages": 0,
-        "conflicts": 0,
-        "occupancy": 0,
-    }
-
-    # ако сакаш подоцна ќе ги земеш од база
-    return render_template("home.html", user=user, alerts=alerts)
 
 
 
