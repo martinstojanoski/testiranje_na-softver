@@ -1,5 +1,6 @@
 import random
 import string
+import re
 from playwright.sync_api import sync_playwright
 
 BASE_URL = "http://127.0.0.1:5000"
@@ -43,12 +44,12 @@ def generate_register_user(i: int):
 # -----------------------------
 def go_register_page(page):
     page.goto(f"{BASE_URL}/register", wait_until="domcontentloaded")
-    # НЕ бараме "Create account" текст. Бараме сигурен input.
+    page.wait_for_selector("form", timeout=10000)
     page.wait_for_selector("input[name='first_name']", timeout=10000)
     page.wait_for_selector("button[type='submit']", timeout=10000)
 
 
-def fill_register_form(page, fname, lname, username, email, phone, password, confirm_password):
+def fill_register_form_no_submit(page, fname, lname, username, email, phone, password, confirm_password):
     page.fill("input[name='first_name']", fname)
     page.fill("input[name='last_name']", lname)
     page.fill("input[name='username']", username)
@@ -57,19 +58,33 @@ def fill_register_form(page, fname, lname, username, email, phone, password, con
     page.fill("input[name='password']", password)
     page.fill("input[name='confirm_password']", confirm_password)
 
-    # Submit (не претпоставуваме navigation, затоа само click + кратко чекање)
-    page.click("button[type='submit']")
-    page.wait_for_timeout(600)  # доволно за DOM update / flash / останување
+
+def submit_register(page):
+    # no_wait_after=True за да не "очекува" навигација
+    page.click("button[type='submit']", no_wait_after=True)
+    page.wait_for_timeout(500)
 
 
 def assert_still_on_register(page):
-    # Во негативен тест очекуваме да остане на register
     assert "/register" in page.url, f"Expected to stay on /register, but URL is: {page.url}"
     page.wait_for_selector("input[name='first_name']", timeout=7000)
 
 
-def _field_exists(page, selector: str) -> bool:
-    return page.locator(selector).count() > 0
+# -----------------------------
+# Validation helpers
+# -----------------------------
+def _safe_name(selector: str) -> str:
+    return re.sub(r"[^a-zA-Z0-9_-]+", "_", selector)[:90]
+
+
+def assert_no_novalidate(page):
+    """
+    Ако form има novalidate -> browser нема да блокира submit со HTML constraints.
+    """
+    has_novalidate = page.eval_on_selector("form", "f => f.hasAttribute('novalidate')")
+    if has_novalidate:
+        page.screenshot(path="FAIL_form_has_novalidate.png")
+        raise Exception("❌ <form> има 'novalidate'. Избриши го за да работи HTML constraint validation.")
 
 
 def assert_field_invalid(page, selector: str, screenshot_if_valid: str, hint: str = ""):
@@ -77,155 +92,194 @@ def assert_field_invalid(page, selector: str, screenshot_if_valid: str, hint: st
     Проверува HTML constraint validation: el.checkValidity()
     Ако испадне VALID, снимаме screenshot и даваме јасен Exception.
     """
-    if not _field_exists(page, selector):
-        page.screenshot(path=f"missing_selector_{selector.replace('[','_').replace(']','_').replace('=','_')}.png")
-        raise Exception(f"Selector not found: {selector}")
+    count = page.locator(selector).count()
+    if count == 0:
+        page.screenshot(path=f"FAIL_missing_selector_{_safe_name(selector)}.png")
+        raise Exception(f"❌ Selector not found: {selector}")
 
     is_invalid = page.eval_on_selector(selector, "el => !el.checkValidity()")
-
     if not is_invalid:
         page.screenshot(path=screenshot_if_valid)
         extra = f"\nHint: {hint}" if hint else ""
         raise Exception(
-            f"Expected INVALID field, but it is VALID -> {selector}.{extra}\n"
-            f"Most likely: your HTML input is missing pattern/required/type constraints."
+            f"❌ Expected INVALID field, but it is VALID -> {selector}.{extra}\n"
+            f"Most likely: missing pattern/required/type OR form has novalidate."
         )
+
+
+def assert_field_valid(page, selector: str, screenshot_if_invalid: str, hint: str = ""):
+    """
+    Корисно за случаи како password mismatch (кога HTML нема constraint за тоа)
+    """
+    count = page.locator(selector).count()
+    if count == 0:
+        page.screenshot(path=f"FAIL_missing_selector_{_safe_name(selector)}.png")
+        raise Exception(f"❌ Selector not found: {selector}")
+
+    is_valid = page.eval_on_selector(selector, "el => el.checkValidity()")
+    if not is_valid:
+        page.screenshot(path=screenshot_if_invalid)
+        extra = f"\nHint: {hint}" if hint else ""
+        raise Exception(f"❌ Expected VALID field, but it is INVALID -> {selector}.{extra}")
 
 
 # ============================================================
-# NEGATIVE CASES (5)
+# NEGATIVE CASES (FULL)
 # ============================================================
 
-def test_register_negative_1_first_name_has_digit():
+def run_case(case_name: str, mutate_fn, invalid_selector: str, invalid_hint: str, ok_shot: str, fail_shot: str):
+    """
+    Generic runner:
+    - Open /register
+    - Ensure no novalidate
+    - Fill form with mutated invalid value
+    - Assert invalid field BEFORE submit
+    - Submit
+    - Assert still on /register
+    """
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)
         context = browser.new_context()
         page = context.new_page()
 
-        fname, lname, username, email, phone, password, confirm_password = generate_register_user(0)
-        fname = fname + "1"  # invalid
+        # base valid data
+        data = list(generate_register_user(0))
+        # apply mutation to create invalid input
+        mutate_fn(data)
 
-        print(f"\n❌ NEG 1: First name with digit -> {fname}")
+        fname, lname, username, email, phone, password, confirm_password = data
+
+        print(f"\n❌ {case_name}")
 
         go_register_page(page)
-        fill_register_form(page, fname, lname, username, email, phone, password, confirm_password)
+        assert_no_novalidate(page)
 
-        assert_still_on_register(page)
+        fill_register_form_no_submit(page, fname, lname, username, email, phone, password, confirm_password)
+
+        # check invalid BEFORE submit
         assert_field_invalid(
             page,
-            "input[name='first_name']",
-            "neg1_first_name_digit_expected_invalid_but_valid.png",
-            hint="Add pattern='^[A-Za-zА-Яа-я]+$' (или letters-only) + required на first_name input."
+            invalid_selector,
+            fail_shot,
+            hint=invalid_hint
         )
-        page.screenshot(path="neg1_first_name_digit_blocked_ok.png")
+
+        # submit and still on /register
+        submit_register(page)
+        assert_still_on_register(page)
+
+        page.screenshot(path=ok_shot)
 
         context.close()
         browser.close()
 
 
-def test_register_negative_2_last_name_has_punctuation():
+def test_neg_1_first_name_has_digit():
+    def mutate(data):
+        data[0] = data[0] + "1"
+    run_case(
+        case_name="NEG 1: First name has digit (Martin1)",
+        mutate_fn=mutate,
+        invalid_selector="input[name='first_name']",
+        invalid_hint="Add required + pattern='^[A-Za-zА-Яа-я]+$' на first_name.",
+        ok_shot="OK_neg1_first_name_digit_blocked.png",
+        fail_shot="FAIL_neg1_first_name_digit_expected_invalid_but_valid.png"
+    )
+
+
+def test_neg_2_last_name_has_punctuation():
+    def mutate(data):
+        data[1] = data[1] + ","
+    run_case(
+        case_name="NEG 2: Last name has punctuation (Trajkovski,)",
+        mutate_fn=mutate,
+        invalid_selector="input[name='last_name']",
+        invalid_hint="Add required + pattern='^[A-Za-zА-Яа-я]+$' (или дозволи '-') на last_name.",
+        ok_shot="OK_neg2_last_name_punct_blocked.png",
+        fail_shot="FAIL_neg2_last_name_punct_expected_invalid_but_valid.png"
+    )
+
+
+def test_neg_3_email_invalid():
+    def mutate(data):
+        data[3] = "invalid-email@"
+    run_case(
+        case_name="NEG 3: Email invalid (invalid-email@)",
+        mutate_fn=mutate,
+        invalid_selector="input[name='email']",
+        invalid_hint="Ensure email input has type='email' + required.",
+        ok_shot="OK_neg3_email_blocked.png",
+        fail_shot="FAIL_neg3_email_expected_invalid_but_valid.png"
+    )
+
+
+def test_neg_4_username_has_digit():
+    def mutate(data):
+        data[2] = data[2] + "7"
+    run_case(
+        case_name="NEG 4: Username has digit (letters-only violated)",
+        mutate_fn=mutate,
+        invalid_selector="input[name='username']",
+        invalid_hint="Ensure username has required + pattern='^[A-Za-z]+$' (letters-only).",
+        ok_shot="OK_neg4_username_digit_blocked.png",
+        fail_shot="FAIL_neg4_username_digit_expected_invalid_but_valid.png"
+    )
+
+
+def test_neg_5_phone_has_letter():
+    def mutate(data):
+        data[4] = "+3897A" + str(random.randint(100000, 999999))
+    run_case(
+        case_name="NEG 5: Phone has letter (+3897Axxxxxx)",
+        mutate_fn=mutate,
+        invalid_selector="input[name='phone']",
+        invalid_hint="Ensure phone has required + pattern='^\\+?[0-9]+$' (digits only).",
+        ok_shot="OK_neg5_phone_letter_blocked.png",
+        fail_shot="FAIL_neg5_phone_letter_expected_invalid_but_valid.png"
+    )
+
+
+# -----------------------------
+# BONUS NEG 6: Password mismatch
+# (ова најчесто НЕ е HTML constraint, туку backend check)
+# -----------------------------
+def test_neg_6_password_mismatch_backend():
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)
         context = browser.new_context()
         page = context.new_page()
 
-        fname, lname, username, email, phone, password, confirm_password = generate_register_user(1)
-        lname = lname + ","  # invalid
+        fname, lname, username, email, phone, password, confirm_password = generate_register_user(6)
+        confirm_password = password + "X"  # mismatch
 
-        print(f"\n❌ NEG 2: Last name with punctuation -> {lname}")
-
-        go_register_page(page)
-        fill_register_form(page, fname, lname, username, email, phone, password, confirm_password)
-
-        assert_still_on_register(page)
-        assert_field_invalid(
-            page,
-            "input[name='last_name']",
-            "neg2_last_name_punct_expected_invalid_but_valid.png",
-            hint="Add pattern='^[A-Za-zА-Яа-я]+$' (или дозволи '-') и required на last_name input."
-        )
-        page.screenshot(path="neg2_last_name_punct_blocked_ok.png")
-
-        context.close()
-        browser.close()
-
-
-def test_register_negative_3_email_invalid():
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
-        context = browser.new_context()
-        page = context.new_page()
-
-        fname, lname, username, email, phone, password, confirm_password = generate_register_user(2)
-        email = "invalid-email@"  # invalid by type="email"
-
-        print(f"\n❌ NEG 3: Invalid email -> {email}")
+        print("\n❌ NEG 6 (BONUS): Password mismatch -> expect to stay on /register (backend validation)")
 
         go_register_page(page)
-        fill_register_form(page, fname, lname, username, email, phone, password, confirm_password)
+        assert_no_novalidate(page)
 
-        assert_still_on_register(page)
-        assert_field_invalid(
+        fill_register_form_no_submit(page, fname, lname, username, email, phone, password, confirm_password)
+
+        # овде очекуваме полињата да се HTML-valid (обично нема constraint за mismatch)
+        assert_field_valid(
             page,
-            "input[name='email']",
-            "neg3_email_expected_invalid_but_valid.png",
-            hint="Ensure your email input is type='email' and required."
+            "input[name='password']",
+            "FAIL_neg6_password_field_invalid.png",
+            hint="Password field is unexpectedly invalid; check required/minlength/pattern."
         )
-        page.screenshot(path="neg3_email_blocked_ok.png")
-
-        context.close()
-        browser.close()
-
-
-def test_register_negative_4_username_has_digit():
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
-        context = browser.new_context()
-        page = context.new_page()
-
-        fname, lname, username, email, phone, password, confirm_password = generate_register_user(3)
-        username = username + "7"  # invalid (letters-only)
-
-        print(f"\n❌ NEG 4: Username with digit -> {username}")
-
-        go_register_page(page)
-        fill_register_form(page, fname, lname, username, email, phone, password, confirm_password)
-
-        assert_still_on_register(page)
-        assert_field_invalid(
+        assert_field_valid(
             page,
-            "input[name='username']",
-            "neg4_username_expected_invalid_but_valid.png",
-            hint="Ensure username has pattern='^[A-Za-z]+$' (letters-only) and required."
+            "input[name='confirm_password']",
+            "FAIL_neg6_confirm_password_field_invalid.png",
+            hint="Confirm password field unexpectedly invalid; check required/minlength/pattern."
         )
-        page.screenshot(path="neg4_username_digit_blocked_ok.png")
 
-        context.close()
-        browser.close()
-
-
-def test_register_negative_5_phone_has_letter():
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
-        context = browser.new_context()
-        page = context.new_page()
-
-        fname, lname, username, email, phone, password, confirm_password = generate_register_user(4)
-        phone = "+3897A" + str(random.randint(100000, 999999))  # invalid
-
-        print(f"\n❌ NEG 5: Phone with letter -> {phone}")
-
-        go_register_page(page)
-        fill_register_form(page, fname, lname, username, email, phone, password, confirm_password)
-
+        # submit => backend треба да врати назад на register со flash message
+        submit_register(page)
         assert_still_on_register(page)
-        assert_field_invalid(
-            page,
-            "input[name='phone']",
-            "neg5_phone_letter_expected_invalid_but_valid.png",
-            hint="Ensure phone has pattern='^\\+?[0-9]+$' (digits only) and required."
-        )
-        page.screenshot(path="neg5_phone_letter_blocked_ok.png")
+
+        # optional: ако имаш flash errors
+        # page.wait_for_selector(".flash, .alert, .toast", timeout=3000)
+        page.screenshot(path="OK_neg6_password_mismatch_blocked_backend.png")
 
         context.close()
         browser.close()
@@ -235,10 +289,11 @@ def test_register_negative_5_phone_has_letter():
 # Run all
 # -----------------------------
 if __name__ == "__main__":
-    test_register_negative_1_first_name_has_digit()
-    test_register_negative_2_last_name_has_punctuation()
-    test_register_negative_3_email_invalid()
-    test_register_negative_4_username_has_digit()
-    test_register_negative_5_phone_has_letter()
+    test_neg_1_first_name_has_digit()
+    test_neg_2_last_name_has_punctuation()
+    test_neg_3_email_invalid()
+    test_neg_4_username_has_digit()
+    test_neg_5_phone_has_letter()
+    test_neg_6_password_mismatch_backend()
 
-    print("\n✅ All negative registration checks executed.")
+    print("\n✅ ALL negative register tests executed.")
